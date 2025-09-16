@@ -35,8 +35,8 @@ for size in SIZES:
         # Add entry for Contents.json
         images.append({
             "idiom": "mac",
-            "size": f"{size}x{size}",
             "scale": f"{scale}x",
+            "size": f"{size}x{size}",
             "filename": filename
         })
 
@@ -44,8 +44,8 @@ for size in SIZES:
 contents = {
     "images": images,
     "info": {
-        "version": 1,
-        "author": "xcode"
+        "author": "xcode",
+        "version": 1
     }
 }
 
