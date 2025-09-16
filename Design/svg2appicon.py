@@ -52,4 +52,4 @@ contents = {
 with open(os.path.join(OUTPUT_DIR, "Contents.json"), "w") as f:
     json.dump(contents, f, indent=2)
 
-print(f"✅ AppIcon set generated in: {OUTPUT_DIR}")
+print(f"✅ AppIcon set generated: {OUTPUT_DIR}")
