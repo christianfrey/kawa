@@ -25,7 +25,7 @@ class CaffeinateService: ObservableObject {
                 self.isActive = true
             }
             print("✅ Caffeinate started successfully")
-            sendNotification(title: "Kawa Activated", message: "Your Mac will stay awake ☕")
+            sendNotification(title: "Kawa Activated", message: "Your Mac will stay awake")
         } catch {
             print("❌ Error starting caffeinate: \(error)")
         }

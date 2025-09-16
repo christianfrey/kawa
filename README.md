@@ -1,4 +1,4 @@
-# Kawa ☕
+# Kawa
 
 Kawa is a small macOS menu bar app that keeps your Mac awake using the built-in `caffeinate` command.  
 
