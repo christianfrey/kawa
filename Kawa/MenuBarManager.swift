@@ -81,9 +81,14 @@ class MenuBarManager: NSObject, ObservableObject {
     private func updateIcon(isActive: Bool) {
         guard let button = statusItem?.button else { return }
         
-        // Choose the appropriate image for the active state
+        // Choose the appropriate image based on the active state
         let imageName = isActive ? "CoffeeCupHot" : "CoffeeCupCold"
-        button.image = NSImage(named: imageName)
+        let image = NSImage(named: imageName)
+        
+        // Let the system automatically handle icon color for Light/Dark Mode
+        image?.isTemplate = true
+        
+        button.image = image
         
         // Update menu
         if let menu = statusItem?.menu,
