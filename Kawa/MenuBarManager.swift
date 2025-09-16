@@ -165,7 +165,7 @@ class MenuBarManager: NSObject, ObservableObject {
     
     @objc private func showAbout() {
         let alert = NSAlert()
-        alert.messageText = "Kawa ☕"
+        alert.messageText = "Kawa"
         alert.informativeText = """
         Version 1.0
         
@@ -175,6 +175,9 @@ class MenuBarManager: NSObject, ObservableObject {
         Click the icon to toggle on/off.
         """
         alert.alertStyle = .informational
+        if let icon = NSApp.applicationIconImage {
+            alert.icon = icon
+        }
         alert.addButton(withTitle: "OK")
         alert.runModal()
     }
