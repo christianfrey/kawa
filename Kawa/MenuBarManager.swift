@@ -68,8 +68,6 @@ class MenuBarManager: NSObject, ObservableObject {
         aboutItem.target = self
         menu.addItem(aboutItem)
         
-        menu.addItem(NSMenuItem.separator())
-        
         let settingsItem = NSMenuItem(
             title: "Settings...",
             action: #selector(showSettings),
@@ -77,6 +75,8 @@ class MenuBarManager: NSObject, ObservableObject {
         )
         settingsItem.target = self
         menu.addItem(settingsItem)
+        
+        menu.addItem(NSMenuItem.separator())
         
         let quitItem = NSMenuItem(
             title: "Quit",
@@ -114,30 +114,27 @@ class MenuBarManager: NSObject, ObservableObject {
     }
     
     @objc private func showSettings() {
+        print("⚙️ Settings menu clicked")
         if settingsWindowController == nil {
+            print("🆕 Creating SettingsWindowController (general)")
             settingsWindowController = SettingsWindowController()
+        } else {
+            print("♻️ Reusing existing SettingsWindowController")
         }
-        settingsWindowController?.showWindow(nil)
+        settingsWindowController?.showWindowWithTab(.general)
     }
-    
+
     @objc private func showAbout() {
-        let alert = NSAlert()
-        alert.messageText = "Kawa"
-        alert.informativeText = """
-        Version 1.0
-        
-        A small app to keep your Mac awake.
-        Uses macOS caffeinate command.
-        
-        Click the icon to toggle on/off.
-        """
-        alert.alertStyle = .informational
-        if let icon = NSApp.applicationIconImage {
-            alert.icon = icon
+        print("ℹ️ About menu clicked")
+        if settingsWindowController == nil {
+            print("🆕 Creating SettingsWindowController (about)")
+            settingsWindowController = SettingsWindowController()
+        } else {
+            print("♻️ Reusing existing SettingsWindowController")
         }
-        alert.addButton(withTitle: "OK")
-        alert.runModal()
+        settingsWindowController?.showWindowWithTab(.about)
     }
+
     
     @objc private func quitApp() {
         print("👋 Quitting Kawa")
