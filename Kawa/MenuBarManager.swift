@@ -5,6 +5,7 @@ class MenuBarManager: NSObject, ObservableObject {
     private var statusItem: NSStatusItem?
     var service = CaffeinateService()
     private var cancellable: AnyCancellable?
+    var settingsWindowController: SettingsWindowController?
     
     override init() {
         super.init()
@@ -67,6 +68,16 @@ class MenuBarManager: NSObject, ObservableObject {
         aboutItem.target = self
         menu.addItem(aboutItem)
         
+        menu.addItem(NSMenuItem.separator())
+        
+        let settingsItem = NSMenuItem(
+            title: "Settings...",
+            action: #selector(showSettings),
+            keyEquivalent: ","
+        )
+        settingsItem.target = self
+        menu.addItem(settingsItem)
+        
         let quitItem = NSMenuItem(
             title: "Quit",
             action: #selector(quitApp),
@@ -100,6 +111,13 @@ class MenuBarManager: NSObject, ObservableObject {
     @objc private func toggleCaffeinate() {
         print("🖱️ Toggle caffeinate clicked")
         service.toggle()
+    }
+    
+    @objc private func showSettings() {
+        if settingsWindowController == nil {
+            settingsWindowController = SettingsWindowController()
+        }
+        settingsWindowController?.showWindow(nil)
     }
     
     @objc private func showAbout() {
