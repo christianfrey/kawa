@@ -64,3 +64,4 @@ fastlane/test_output
 # Misc
 .DS_Store
 *.app
+/tests/
