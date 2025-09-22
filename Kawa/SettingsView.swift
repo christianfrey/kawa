@@ -150,11 +150,13 @@ struct AboutView: View {
 // Window controller that manages the settings window and allows selecting a tab before showing.
 class SettingsWindowController: NSWindowController {
     private var currentTab: SettingsTab = .general
+    private let desiredContentSize = NSSize(width: 480, height: 400)
 
     // Designated initializer for the settings window controller
     init(selectedTab: SettingsTab = .general) {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 420, height: 320),
+            // contentRect: NSRect(x: 0, y: 0, width: 480, height: 400),
+            contentRect: NSRect(origin: .zero, size: desiredContentSize),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: false
@@ -162,14 +164,17 @@ class SettingsWindowController: NSWindowController {
         window.title = "Kawa Settings"
         window.isReleasedWhenClosed = false
 
-        super.init(window: window) // window is attached here
-
-        // Center the window on the main screen (avoiding menu bar and dock)
-        centerWindow(window)
+        super.init(window: window)
 
         // Initialize the selected tab
         self.currentTab = selectedTab
         window.contentViewController = NSHostingController(rootView: SettingsView(selectedTab: selectedTab))
+
+        // Set window size to prevent UI issues when positioning the window
+        window.setContentSize(desiredContentSize)
+        window.minSize = desiredContentSize
+        
+        positionWindowNearTopCenter(window)
 
         print("✅ SettingsWindowController initialized with tab: \(selectedTab)")
     }
@@ -197,21 +202,21 @@ class SettingsWindowController: NSWindowController {
 
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-        // Ensure Settings window appears in front of Xcode when debugging
+        // Ensure Settings window appears in front
         window.orderFrontRegardless()
 
         print("👀 Window shown with tab: \(tab)")
     }
 
-    // Center the window on the main screen, considering the visible frame (excludes menu bar and dock)
-    private func centerWindow(_ window: NSWindow) {
+    // Positions the window horizontally centered and vertically slightly towards the top of the screen
+    private func positionWindowNearTopCenter(_ window: NSWindow) {
         guard let screen = NSScreen.main else { return }
         let screenFrame = screen.visibleFrame
         let windowSize = window.frame.size
 
         let x = screenFrame.midX - windowSize.width / 2
-        let y = screenFrame.midY - windowSize.height / 2
+        let y = screenFrame.origin.y + screenFrame.height * 2/3 - windowSize.height / 2
         window.setFrameOrigin(NSPoint(x: x, y: y))
-        print("📌 Window centered at (\(x), \(y))")
+        print("📌 Window positioned near top-center at (\(x), \(y))")
     }
 }
