@@ -157,7 +157,8 @@ class SettingsWindowController: NSWindowController {
         let window = NSWindow(
             // contentRect: NSRect(x: 0, y: 0, width: 480, height: 400),
             contentRect: NSRect(origin: .zero, size: desiredContentSize),
-            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            // styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
         )
