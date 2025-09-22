@@ -9,7 +9,7 @@ class MenuBarManager: NSObject, ObservableObject {
     
     override init() {
         super.init()
-        print("🚀 Initializing MenuBarManager")
+        // print("🚀 Initializing MenuBarManager")
         setupMenuBar()
         
         // Observe service state changes
@@ -32,7 +32,7 @@ class MenuBarManager: NSObject, ObservableObject {
             return
         }
         
-        print("✅ Status item created successfully")
+        // print("✅ Status item created successfully")
         
         // Set initial icon
         updateIcon(isActive: false)
@@ -44,7 +44,7 @@ class MenuBarManager: NSObject, ObservableObject {
         // Create menu
         setupMenu()
         
-        print("✅ Menu bar setup complete")
+        // print("✅ Menu bar setup complete")
     }
     
     private func setupMenu() {
@@ -114,7 +114,7 @@ class MenuBarManager: NSObject, ObservableObject {
     }
     
     @objc private func showSettings() {
-        print("⚙️ Settings menu clicked")
+        // print("⚙️ Settings menu clicked")
         if settingsWindowController == nil {
             print("🆕 Creating SettingsWindowController (general)")
             settingsWindowController = SettingsWindowController()
@@ -125,7 +125,7 @@ class MenuBarManager: NSObject, ObservableObject {
     }
 
     @objc private func showAbout() {
-        print("ℹ️ About menu clicked")
+        // print("ℹ️ About menu clicked")
         if settingsWindowController == nil {
             print("🆕 Creating SettingsWindowController (about)")
             settingsWindowController = SettingsWindowController()

@@ -12,7 +12,7 @@ class SleepPreventionManager: ObservableObject {
     @Published var isPreventingSleep: Bool = false {
         didSet {
             // This observer is the main entry point for enabling/disabling prevention.
-            print("▶️ isPreventingSleep changed to: \(isPreventingSleep)")
+            // print("▶️ isPreventingSleep changed to: \(isPreventingSleep)")
             UserDefaults.standard.set(isPreventingSleep, forKey: "preventSystemSleep")
             updateSleepPrevention()
         }
@@ -55,7 +55,7 @@ class SleepPreventionManager: ObservableObject {
 
     private init() {
         self.isPreventingSleep = UserDefaults.standard.bool(forKey: "preventSystemSleep")
-        print("🔹 SleepPreventionManager initialized, isPreventingSleep=\(isPreventingSleep)")
+        // print("🔹 SleepPreventionManager initialized, isPreventingSleep=\(isPreventingSleep)")
 
         setupNotifications()
         updateSystemStatus()
@@ -88,7 +88,7 @@ class SleepPreventionManager: ObservableObject {
 
     /// The main function that decides which assertions should be active.
     private func updateSleepPrevention() {
-        print("🔹 Updating sleep prevention state...")
+        // print("🔹 Updating sleep prevention state...")
 
         // Determine the desired state for each assertion.
         let shouldPreventSystemSleep = isPreventingSleep
@@ -139,7 +139,7 @@ class SleepPreventionManager: ObservableObject {
         // Setup power source notification with C callback
         setupPowerSourceNotification()
 
-        print("📌 Notifications configured")
+        // print("📌 Notifications configured")
     }
     
     private func setupPowerSourceNotification() {
@@ -173,7 +173,7 @@ class SleepPreventionManager: ObservableObject {
         // Update display status.
         self.hasExternalDisplay = NSScreen.screens.count > 1
 
-        print("ℹ️ Current state: isOnBattery=\(isOnBattery), hasExternalDisplay=\(hasExternalDisplay)")
+        // print("ℹ️ Current state: isOnBattery=\(isOnBattery), hasExternalDisplay=\(hasExternalDisplay)")
     }
 }
 
