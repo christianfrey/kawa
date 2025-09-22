@@ -194,8 +194,12 @@ class SettingsWindowController: NSWindowController {
         }
 
         updateTab(tab)
+
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+        // Ensure Settings window appears in front of Xcode when debugging
+        window.orderFrontRegardless()
+
         print("👀 Window shown with tab: \(tab)")
     }
 
