@@ -4,8 +4,9 @@ import cairosvg
 
 # SVG files to convert (source → .imageset folder)
 SVG_FILES = [
-    ("CoffeeCupHot.svg", "CoffeeCupHot.imageset"),
-    ("CoffeeCupCold.svg", "CoffeeCupCold.imageset")
+    ("CoffeeBean.svg", "CoffeeBean.imageset"),
+    # ("CoffeeCupHot.svg", "CoffeeCupHot.imageset"),
+    # ("CoffeeCupCold.svg", "CoffeeCupCold.imageset")
 ]
 
 # Scales used by Xcode (@1x, @2x, @3x)
