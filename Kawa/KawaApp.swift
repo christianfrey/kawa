@@ -12,7 +12,7 @@ class SettingsState: ObservableObject {
 @main
 struct KawaApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    var service = CaffeinateService()
+    @StateObject private var sleepManager = SleepPreventionManager.shared
     
     @StateObject private var settingsState = SettingsState()
     @Environment(\.openSettings) private var openSettings
@@ -22,7 +22,7 @@ struct KawaApp: App {
 
         MenuBarExtra {
 
-            let toggleCaffeinateName = isActive ? "Deactivate Kawa" : "Activate Kawa"
+            let toggleCaffeinateName = sleepManager.isPreventingSleep ? "Deactivate Kawa" : "Activate Kawa"
             Button(toggleCaffeinateName) {
                 print("🖱️ Toggle caffeinate clicked")
                 toggleCaffeinate()
@@ -60,7 +60,7 @@ struct KawaApp: App {
             .keyboardShortcut("q", modifiers: [.command])
             
         } label: {
-            let iconName = isActive ? "CoffeeCupHot" : "CoffeeBean"
+            let iconName = sleepManager.isPreventingSleep ? "CoffeeCupHot" : "CoffeeBean"
             Image(iconName)
                 // Let the system automatically handle icon color for Light/Dark Mode
                 .renderingMode(.template)
@@ -72,8 +72,7 @@ struct KawaApp: App {
     }
     
     func toggleCaffeinate() {
-        isActive.toggle()
-        service.toggle()
-        print("🖱️ Caffeinate toggled: \(isActive)")
+        sleepManager.toggle()
+        print("🖱️ Caffeinate toggled: \(sleepManager.isPreventingSleep)")
     }
 }
