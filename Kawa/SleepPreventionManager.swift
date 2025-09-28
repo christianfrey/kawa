@@ -186,12 +186,12 @@ class SleepPreventionManager: ObservableObject {
     
     private func startPreventingSleep() {
         print("✅ Sleep prevention started successfully")
-        sendNotification(title: "Kawa Activated", message: "Your Mac will stay awake")
+        sendNotification(title: "Kawa", message: "Sleep prevention activated")
     }
     
     private func stopPreventingSleep() {
         print("⏹️ Sleep prevention stopped")
-        sendNotification(title: "Kawa Deactivated", message: "Your Mac can now sleep")
+        sendNotification(title: "Kawa", message: "Sleep prevention deactivated")
     }
     
     private func sendNotification(title: String, message: String) {
