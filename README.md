@@ -5,7 +5,7 @@ Kawa is a small macOS menu bar app that keeps your Mac awake using system power 
 - Toggle sleep prevention directly from the menu bar.
 - Doesn't use the the built-in `caffeinate` command.
 - Prevents sleep when lid is closed (optional) - works exactly like Amphetamine.
-- Launch at login option
+- Launch at login option.
 - Shows notifications when activated/deactivated.
 - Minimal, lightweight, and built with SwiftUI.
 
