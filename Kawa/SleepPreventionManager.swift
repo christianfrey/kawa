@@ -156,7 +156,7 @@ class SleepPreventionManager: ObservableObject {
 
     /// Updates the system status (battery, screens) and re-evaluates assertions.
     @objc internal func systemStatusDidChange() {
-        print("🔄 System status changed, updating...")
+        // print("🔄 System status changed, updating...")
         updateSystemStatus()
         updateSleepPrevention() // Re-apply the logic with the new state.
     }
