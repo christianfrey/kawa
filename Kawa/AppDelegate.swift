@@ -2,7 +2,6 @@ import SwiftUI
 import UserNotifications
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    var menuBarManager: MenuBarManager?
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         print("🎯 App finished launching")
@@ -27,8 +26,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         
-        // Initialize menu bar
-        menuBarManager = MenuBarManager()
     }
     
     private func handleNotificationPermissionDenied() {
@@ -47,9 +44,5 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.notifications")!)
             }
         }
-    }
-    
-    func applicationWillTerminate(_ notification: Notification) {
-        menuBarManager?.service.stop()
     }
 }
