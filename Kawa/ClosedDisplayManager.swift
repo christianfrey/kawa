@@ -35,7 +35,7 @@ enum ClosedDisplayManager {
         
         // Prepare input and selector
         var input: UInt64 = enabled ? 1 : 0
-        let selector: UInt32 = UInt32(kPMSetClamshellSleepState) // 12 = kPMSetClamshellSleepState
+        let selector: UInt32 = UInt32(kPMSetClamshellSleepState)
         
         // Call the method to set clamshell sleep state
         let callResult = withUnsafePointer(to: &input) { inputPtr in
