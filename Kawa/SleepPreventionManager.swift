@@ -2,6 +2,7 @@ import Foundation
 import IOKit.pwr_mgt
 import IOKit.ps
 import AppKit
+import UserNotifications
 
 @MainActor
 class SleepPreventionManager: ObservableObject {
@@ -82,8 +83,9 @@ class SleepPreventionManager: ObservableObject {
     
     func toggle() {
         isPreventingSleep.toggle()
+        updateSleepPrevention()
     }
-
+    
     // MARK: - Core Logic
 
     /// The main function that decides which assertions should be active.
@@ -118,6 +120,9 @@ class SleepPreventionManager: ObservableObject {
             if result == kIOReturnSuccess {
                 activeAssertionIDs[type] = assertionID
                 print("✅ Assertion created: \(type), id=\(assertionID)")
+                if type == .preventSystemSleep {
+                    startPreventingSleep()
+                }
             } else {
                 print("❌ Failed to create assertion: \(type)")
             }
@@ -127,6 +132,9 @@ class SleepPreventionManager: ObservableObject {
 
             IOPMAssertionRelease(assertionID)
             print("🗑️ Assertion released: \(type)")
+            if type == .preventSystemSleep {
+                stopPreventingSleep()
+            }
         }
     }
 
@@ -174,6 +182,49 @@ class SleepPreventionManager: ObservableObject {
         self.hasExternalDisplay = NSScreen.screens.count > 1
 
         // print("ℹ️ Current state: isOnBattery=\(isOnBattery), hasExternalDisplay=\(hasExternalDisplay)")
+    }
+    
+    private func startPreventingSleep() {
+        print("✅ Sleep prevention started successfully")
+        sendNotification(title: "Kawa Activated", message: "Your Mac will stay awake")
+    }
+    
+    private func stopPreventingSleep() {
+        print("⏹️ Sleep prevention stopped")
+        sendNotification(title: "Kawa Deactivated", message: "Your Mac can now sleep")
+    }
+    
+    private func sendNotification(title: String, message: String) {
+        // Ensure notifications are authorized
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            // Check if notifications are allowed
+            guard settings.authorizationStatus == .authorized else {
+                print("❌ Notifications not authorized")
+                return
+            }
+            
+            // Create notification content
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body = message
+            content.sound = .default
+            
+            // Create a trigger (nil means deliver immediately)
+            let request = UNNotificationRequest(
+                identifier: UUID().uuidString,
+                content: content,
+                trigger: nil
+            )
+            
+            // Add the notification request
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("❌ Error sending notification: \(error)")
+                } else {
+                    print("✅ Notification sent successfully")
+                }
+            }
+        }
     }
 }
 
