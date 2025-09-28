@@ -1,5 +1,16 @@
 # Kawa
 
+<p align="center">
+  <img src="./Kawa/Assets.xcassets/AppIcon.appiconset/AppIcon_256.png" width="128">
+   <br>
+   <strong>Status: </strong>In development<br>
+   <!--br>
+   <a href="https://github.com/christianfrey/kawa/releases"><strong>Download</strong></a>
+    · 
+   <a-- href="https://github.com/christianfrey/kawa/commits">Commits</a-->
+</p>
+</br>
+
 Kawa is a small macOS menu bar app that keeps your Mac awake using system power management.  
 
 - Toggle sleep prevention directly from the menu bar.
