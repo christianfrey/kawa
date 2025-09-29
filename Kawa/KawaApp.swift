@@ -2,6 +2,7 @@ import SwiftUI
 
 enum SettingsTab: Int {
     case general
+    case notifications
     case about
 }
 

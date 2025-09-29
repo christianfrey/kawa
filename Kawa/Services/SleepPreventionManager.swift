@@ -195,6 +195,10 @@ class SleepPreventionManager: ObservableObject {
     }
     
     private func sendNotification(title: String, message: String) {
+
+        // Check user preference
+        guard UserDefaults.standard.bool(forKey: "notificationsEnabled") else { return }
+        
         // Ensure notifications are authorized
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             // Check if notifications are allowed

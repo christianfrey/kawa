@@ -14,6 +14,12 @@ struct SettingsView: View {
                     Label("General", systemImage: "gear")
                 }
 
+            NotificationsSettingsView()
+                .tag(SettingsTab.notifications)
+                .tabItem {
+                    Label("Notifications", systemImage: "bell")
+                }
+            
             AboutView()
                 .tag(SettingsTab.about)
                 .tabItem {
