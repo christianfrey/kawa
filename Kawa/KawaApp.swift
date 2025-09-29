@@ -53,7 +53,7 @@ struct KawaApp: App {
             
             Divider()
             
-            Button("Quit") {
+            Button("Quit Kawa") {
                 print("👋 Quitting Kawa")
                 NSApp.terminate(nil)
             }
