@@ -2,6 +2,32 @@ import SwiftUI
 import AppKit // MenuBarExtra does not support right-click handling, so use NSStatusBar
 import Combine
 
+// Defines which mouse click is used for quick-starting a session
+enum QuickStartClickMode: String {
+    case left = "left"
+    case right = "right"
+}
+
+extension UserDefaults {
+    private enum Keys {
+        static let quickStartClickMode = "quickStartClickMode"
+    }
+    
+    // Store and retrieve the user preference for quick-start click mode
+    var quickStartClickMode: QuickStartClickMode {
+        get {
+            if let value = string(forKey: Keys.quickStartClickMode),
+               let mode = QuickStartClickMode(rawValue: value) {
+                return mode
+            }
+            return .right // Default mode: right-click quick-start
+        }
+        set {
+            set(newValue.rawValue, forKey: Keys.quickStartClickMode)
+        }
+    }
+}
+
 @MainActor
 class MenuBarManager: NSObject, ObservableObject {
     private var statusItem: NSStatusItem?
@@ -53,19 +79,28 @@ class MenuBarManager: NSObject, ObservableObject {
             button.image = image
         }
     }
-    
+
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
         guard let event = NSApp.currentEvent else { return }
+        let mode = UserDefaults.standard.quickStartClickMode
         
         switch event.type {
         case .leftMouseUp:
-            // Left click - show menu
-            print("🖱️ Left click - showing menu")
-            showMenu()
+            if mode == .left {
+                print("🖱️ Left click → toggle Kawa")
+                sleepManager.toggle()
+            } else {
+                print("🖱️ Left click → show menu")
+                showMenu()
+            }
         case .rightMouseUp:
-            // Right click - toggle Kawa
-            print("🖱️ Right click - toggling Kawa")
-            sleepManager.toggle()
+            if mode == .right {
+                print("🖱️ Right click → toggle Kawa")
+                sleepManager.toggle()
+            } else {
+                print("🖱️ Right click → show menu")
+                showMenu()
+            }
         default:
             break
         }

@@ -4,6 +4,14 @@ struct GeneralSettingsView: View {
     @StateObject private var loginItemManager = LoginItemManager.shared
     @StateObject private var sleepManager = SleepPreventionManager.shared
     @State private var preventLidSleep = false
+    @AppStorage("quickStartClickMode") private var quickStartClickModeRaw: String = QuickStartClickMode.right.rawValue
+    
+    private var quickStartClickMode: Binding<QuickStartClickMode> {
+        Binding(
+            get: { QuickStartClickMode(rawValue: quickStartClickModeRaw) ?? .right },
+            set: { quickStartClickModeRaw = $0.rawValue }
+        )
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -31,6 +39,15 @@ struct GeneralSettingsView: View {
                 }
                 .padding()
             // }
+
+            Form {
+                Picker("Quickstart via Menu Bar Icon", selection: quickStartClickMode) {
+                    Text("Right click").tag(QuickStartClickMode.right)
+                    Text("Left click").tag(QuickStartClickMode.left)
+                }
+                .pickerStyle(.menu)
+            }
+            .padding()
 
             // GroupBox("Power Management") {
             //     VStack(alignment: .leading, spacing: 8) {
