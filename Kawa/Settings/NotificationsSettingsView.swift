@@ -22,4 +22,6 @@ struct NotificationsSettingsView: View {
 
 #Preview {
     NotificationsSettingsView()
+        .padding(20)
+        .frame(width: 600, height: 300)
 }

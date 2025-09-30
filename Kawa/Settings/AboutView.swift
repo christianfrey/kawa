@@ -34,73 +34,10 @@ struct AboutView: View {
     }
 }
 
-    // var body: some View {
-
-    //     VStack(alignment: .center) {
-
-    //         // Spacer()
-
-    //         VStack(spacing: 10) {
-    //             Image(nsImage: NSApp.applicationIconImage)
-    //             Text("Kawa")
-    //                 .font(.title)
-    //                 .bold()
-    //             HStack {
-    //                 Text("Version 1.0")
-    //                 // Text("(Build xyz)").font(.footnote)
-    //             }
-
-    //             // Text("Made with ❤️ by Christian Frey").font(.caption)
-    //         }
-    //         .padding(.vertical)
-
-            // HStack {
-            //     Spacer()
-            //     Button(action: {
-            //         NSWorkspace.shared.open(URL(string: "https://github.com/sponsors/christianfrey")!)
-            //     }, label: {
-            //         HStack(alignment: .center, spacing: 8) {
-            //             Image(systemName: "heart")
-            //                 .resizable()
-            //                 .scaledToFit()
-            //                 .frame(width: 16, height: 16)
-            //                 .foregroundStyle(.pink)
-
-            //             Text("Sponsor")
-            //                 .font(.body)
-            //                 .bold()
-            //         }
-            //         .padding(5)
-            //     })
-            //     Spacer()
-            // }
-
-            // Spacer()
-
-            // GroupBox {
-            //     HStack{
-
-            //         Text("Submit a bug or feature request")
-            //             .font(.callout)
-            //             .foregroundStyle(.primary)
-            //             .padding(.leading, 5)
-            //         Spacer()
-            //         Button {
-            //             NSWorkspace.shared.open(URL(string: "https://github.com/christianfrey/kawa/issues/new/choose")!)
-            //         } label: {
-            //             Text("Open")
-            //         }
-            //         .buttonStyle(.bordered)
-            //     }
-            //     .padding(5)
-            // }
-
-    //     }
-    // }
-// }
-
 // MARK: - Preview
 
 #Preview {
     AboutView()
+        .padding(20)
+        .frame(width: 600, height: 300)
 }

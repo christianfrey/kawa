@@ -6,94 +6,94 @@ struct GeneralSettingsView: View {
     @State private var preventLidSleep = false
     @AppStorage("quickStartClickMode") private var quickStartClickModeRaw: String = QuickStartClickMode.right.rawValue
     
+    // MARK: - Computed Properties
+
+    private var isLaunchAtLoginEnabled: Binding<Bool> {
+        Binding(
+            get: { loginItemManager.isEnabled },
+            set: { _ in loginItemManager.toggle() }
+        )
+    }
+    
+    private var isKawaActive: Binding<Bool> {
+        Binding(
+            get: { sleepManager.isPreventingSleep },
+            set: { _ in sleepManager.toggle() }
+        )
+    }
+    
+    private var isLidSleepPrevented: Binding<Bool> {
+        Binding(
+            get: { preventLidSleep },
+            set: { newValue in
+                preventLidSleep = newValue
+                ClosedDisplayManager.setEnabled(newValue)
+            }
+        )
+    }
+
     private var quickStartClickMode: Binding<QuickStartClickMode> {
         Binding(
             get: { QuickStartClickMode(rawValue: quickStartClickModeRaw) ?? .right },
             set: { quickStartClickModeRaw = $0.rawValue }
         )
     }
-    
+
+    // MARK: - Body
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // GroupBox("General") {
-                VStack(alignment: .leading, spacing: 12) {
-                    Toggle("Launch Kawa at login", isOn: Binding(
-                        get: { loginItemManager.isEnabled },
-                        set: { _ in loginItemManager.toggle() }
-                    ))
-                    // .help("Launches Kawa automatically when your Mac starts up")
+        VStack(alignment: .leading, spacing: 16) {
+            // General toggles
+            HStack(alignment: .top, spacing: 12) {
+                Text("Startup & Sleep Control:")
+                    .frame(width: 180, alignment: .trailing)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("Launch Kawa at login", isOn: isLaunchAtLoginEnabled)
+                        .help("Automatically starts Kawa when your Mac boots up")
                     
-                    Toggle("Activate Kawa", isOn: Binding(
-                        get: { sleepManager.isPreventingSleep },
-                        set: { _ in sleepManager.toggle() }
-                    ))
+                    Toggle("Activate Kawa", isOn: isKawaActive)
+                        .help("Prevents your Mac from sleeping")
                     
-                    Toggle("Prevent system sleep when display is closed", isOn: Binding(
-                        get: { preventLidSleep },
-                        set: { newValue in
-                            preventLidSleep = newValue
-                            ClosedDisplayManager.setEnabled(newValue)
-                        }
-                    ))
-                    // .help("Keeps your Mac awake even when the display is closed (clamshell mode)")
+                    Toggle("Prevent sleep when display is closed", isOn: isLidSleepPrevented)
+                        .help("Keeps your Mac awake even with the lid closed (laptops only)")
                 }
-                .padding()
-            // }
-
-            Form {
-                Picker("Quickstart via Menu Bar Icon", selection: quickStartClickMode) {
-                    Text("Right click").tag(QuickStartClickMode.right)
-                    Text("Left click").tag(QuickStartClickMode.left)
-                }
-                .pickerStyle(.menu)
+                
+                Spacer()
             }
-            .padding()
-
-            // GroupBox("Power Management") {
-            //     VStack(alignment: .leading, spacing: 8) {
-            //         HStack {
-            //             Image(systemName: sleepManager.isPreventingSleep ? "moon.fill" : "moon")
-            //                 .foregroundColor(sleepManager.isPreventingSleep ? .orange : .secondary)
-            //             Text(sleepManager.statusDescription)
-            //                 .font(.caption)
-            //                 .foregroundColor(.primary)
-            //             Spacer()
-            //         }
-
-            //         HStack(spacing: 16) {
-            //             HStack {
-            //                 Image(systemName: sleepManager.isOnBattery ? "battery.100" : "bolt.fill")
-            //                     .foregroundColor(sleepManager.isOnBattery ? .orange : .green)
-            //                 Text(sleepManager.isOnBattery ? "Battery" : "AC Power")
-            //                     .font(.caption2)
-            //             }
-            //             HStack {
-            //                 Image(systemName: sleepManager.hasExternalDisplay ? "display" : "laptopcomputer")
-            //                     .foregroundColor(sleepManager.hasExternalDisplay ? .blue : .secondary)
-            //                 Text(sleepManager.hasExternalDisplay ? "External Display" : "Built-in Only")
-            //                     .font(.caption2)
-            //             }
-            //         }
-
-//                    if sleepManager.isPreventingSleep {
-//                        Text("🚀 Advanced sleep prevention active - works on battery and without external display")
-//                            .font(.caption2)
-//                            .foregroundColor(.green)
-//                            .padding(.top, 2)
-//                    }
-//
-//                    Text("When enabled, your Mac will stay awake even with the lid closed on battery power, allowing background processes to continue running.")
-//                        .font(.caption2)
-//                        .foregroundColor(.secondary)
-//                        .fixedSize(horizontal: false, vertical: true)
-
-            //     }
-            //     .padding()
-            // }
-
+            
+            Divider()
+                .padding(.vertical, 4)
+            
+            // Quick start picker
+            HStack(alignment: .top, spacing: 12) {
+                Text("Menu Icon Quickstart:")
+                    .frame(width: 180, alignment: .trailing)
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    Picker("", selection: quickStartClickMode) {
+                        Text("Right click").tag(QuickStartClickMode.right)
+                        Text("Left click").tag(QuickStartClickMode.left)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .fixedSize()
+                    .help("Choose which click toggles Kawa directly")
+                    
+                    Text("The selected click will toggle Kawa, while the other will show the menu.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.leading, 0)
+                }
+                
+                Spacer()
+            }
+            
             Spacer()
         }
         .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        // .onAppear(perform: syncLidSleepState)
     }
 }
 
@@ -101,4 +101,6 @@ struct GeneralSettingsView: View {
 
 #Preview {
     GeneralSettingsView()
+        .padding(20)
+        .frame(width: 600, height: 300)
 }
