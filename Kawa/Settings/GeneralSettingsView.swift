@@ -7,12 +7,14 @@ struct GeneralSettingsView: View {
     // MARK: - Properties
     
     @StateObject private var loginItemManager = LoginItemManager.shared
-    @StateObject private var sleepManager = SleepPreventionManager.shared
     
-    @AppStorage("preventLidSleep") 
+    @AppStorage("startSessionOnLaunch")
+    private var startSessionOnLaunch: Bool = false
+    
+    @AppStorage("preventLidSleep")
     private var preventLidSleep: Bool = false
     
-    @AppStorage("quickStartClickMode") 
+    @AppStorage("quickStartClickMode")
     private var quickStartClickModeRaw: String = QuickStartClickMode.right.rawValue
     
     // MARK: - Computed Properties
@@ -21,13 +23,6 @@ struct GeneralSettingsView: View {
         Binding(
             get: { loginItemManager.isEnabled },
             set: { _ in loginItemManager.toggle() }
-        )
-    }
-    
-    private var isKawaActive: Binding<Bool> {
-        Binding(
-            get: { sleepManager.isPreventingSleep },
-            set: { _ in sleepManager.toggle() }
         )
     }
     
@@ -61,8 +56,8 @@ struct GeneralSettingsView: View {
                     Toggle("Launch Kawa at login", isOn: isLaunchAtLoginEnabled)
                         .help("Automatically starts Kawa when your Mac boots up")
                     
-                    Toggle("Activate Kawa", isOn: isKawaActive)
-                        .help("Prevents your Mac from sleeping")
+                    Toggle("Start session when app launches", isOn: $startSessionOnLaunch)
+                        .help("Automatically activates Kawa when the application starts.")
                     
                     Toggle("Prevent sleep when display is closed", isOn: isLidSleepPrevented)
                         .help("Keeps your Mac awake even with the lid closed (laptops only)")

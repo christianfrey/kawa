@@ -12,9 +12,6 @@ class SleepPreventionManager: ObservableObject {
     
     @Published var isPreventingSleep: Bool = false {
         didSet {
-            // This observer is the main entry point for enabling/disabling prevention.
-            // print("▶️ isPreventingSleep changed to: \(isPreventingSleep)")
-            UserDefaults.standard.set(isPreventingSleep, forKey: "preventSystemSleep")
             updateSleepPrevention()
         }
     }
@@ -55,13 +52,15 @@ class SleepPreventionManager: ObservableObject {
     private var powerSourceRunLoopSource: CFRunLoopSource?
 
     private init() {
-        self.isPreventingSleep = UserDefaults.standard.bool(forKey: "preventSystemSleep")
-        // print("🔹 SleepPreventionManager initialized, isPreventingSleep=\(isPreventingSleep)")
+        let shouldStartOnLaunch = UserDefaults.standard.bool(forKey: "startSessionOnLaunch")
+        self.isPreventingSleep = shouldStartOnLaunch
+        
+        if shouldStartOnLaunch {
+            print("🚀 Starting session on launch as per user preference.")
+        }
 
         setupNotifications()
         updateSystemStatus()
-
-        // Apply the initial state on launch.
         updateSleepPrevention()
     }
 
@@ -83,7 +82,6 @@ class SleepPreventionManager: ObservableObject {
     
     func toggle() {
         isPreventingSleep.toggle()
-        updateSleepPrevention()
     }
     
     // MARK: - Core Logic
