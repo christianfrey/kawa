@@ -1,13 +1,22 @@
 import SwiftUI
 
+// MARK: - General Settings View
+
 struct GeneralSettingsView: View {
+    
+    // MARK: - Properties
+    
     @StateObject private var loginItemManager = LoginItemManager.shared
     @StateObject private var sleepManager = SleepPreventionManager.shared
-    @State private var preventLidSleep = false
-    @AppStorage("quickStartClickMode") private var quickStartClickModeRaw: String = QuickStartClickMode.right.rawValue
+    
+    @AppStorage("preventLidSleep") 
+    private var preventLidSleep: Bool = false
+    
+    @AppStorage("quickStartClickMode") 
+    private var quickStartClickModeRaw: String = QuickStartClickMode.right.rawValue
     
     // MARK: - Computed Properties
-
+    
     private var isLaunchAtLoginEnabled: Binding<Bool> {
         Binding(
             get: { loginItemManager.isEnabled },
@@ -31,16 +40,16 @@ struct GeneralSettingsView: View {
             }
         )
     }
-
+    
     private var quickStartClickMode: Binding<QuickStartClickMode> {
         Binding(
             get: { QuickStartClickMode(rawValue: quickStartClickModeRaw) ?? .right },
             set: { quickStartClickModeRaw = $0.rawValue }
         )
     }
-
+    
     // MARK: - Body
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // General toggles
@@ -93,7 +102,14 @@ struct GeneralSettingsView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        // .onAppear(perform: syncLidSleepState)
+        .onAppear(perform: syncLidSleepState)
+    }
+    
+    // MARK: - Methods
+    
+    private func syncLidSleepState() {
+        // Sync the closed display state on appear
+        ClosedDisplayManager.setEnabled(preventLidSleep)
     }
 }
 

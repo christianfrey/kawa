@@ -28,11 +28,13 @@ extension UserDefaults {
     }
 }
 
+// MARK: - Menu Bar Manager
+
 @MainActor
 class MenuBarManager: NSObject, ObservableObject {
     private var statusItem: NSStatusItem?
     private let sleepManager = SleepPreventionManager.shared
-    private var settingsState: SettingsState
+    private let settingsState: SettingsState
     private var cancellables = Set<AnyCancellable>()
 
     init(settingsState: SettingsState) {
@@ -49,14 +51,14 @@ class MenuBarManager: NSObject, ObservableObject {
     private func setupMenuBarItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         
-        if let button = statusItem?.button {
-            updateIcon()
-            
-            // Configure click handlers for left and right clicks
-            button.action = #selector(statusItemClicked(_:))
-            button.target = self
-            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
-        }
+        guard let button = statusItem?.button else { return }
+
+        updateIcon()
+        
+        // Configure click handlers for left and right clicks
+        button.action = #selector(statusItemClicked(_:))
+        button.target = self
+        button.sendAction(on: [.leftMouseUp, .rightMouseUp])
     }
     
     private func setupObservers() {
@@ -73,10 +75,11 @@ class MenuBarManager: NSObject, ObservableObject {
         guard let button = statusItem?.button else { return }
         
         let iconName = sleepManager.isPreventingSleep ? "CoffeeCupHot" : "CoffeeBean"
-        if let image = NSImage(named: iconName) {
-            image.isTemplate = true
-            button.image = image
-        }
+        
+        guard let image = NSImage(named: iconName) else { return }
+
+        image.isTemplate = true
+        button.image = image
     }
 
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
@@ -138,6 +141,8 @@ class MenuBarManager: NSObject, ObservableObject {
         statusItem?.button?.performClick(nil)
         statusItem?.menu = nil
     }
+
+    // MARK: - Menu Actions
     
     @objc private func toggleCaffeinate() {
         sleepManager.toggle()
@@ -154,8 +159,7 @@ class MenuBarManager: NSObject, ObservableObject {
     }
     
     private func openSettingsWindow() {
-        let environment = EnvironmentValues()
-        environment.openSettings()
+        EnvironmentValues().openSettings()
         NSApp.activate(ignoringOtherApps: true)
     }
     
