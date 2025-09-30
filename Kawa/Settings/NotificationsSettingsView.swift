@@ -7,7 +7,7 @@ struct NotificationsSettingsView: View {
         Form {
             Toggle("Enable Notifications", isOn: $notificationsEnabled)
                 .toggleStyle(SwitchToggleStyle())
-                .help("Turn on to receive notifications when sleep prevention starts or stops")
+                // .help("Turn on to receive notifications when sleep prevention starts or stops")
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)

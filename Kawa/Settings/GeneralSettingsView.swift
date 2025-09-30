@@ -13,7 +13,7 @@ struct GeneralSettingsView: View {
                         get: { loginItemManager.isEnabled },
                         set: { _ in loginItemManager.toggle() }
                     ))
-                    .help("Launches Kawa automatically when your Mac starts up")
+                    // .help("Launches Kawa automatically when your Mac starts up")
                     
                     Toggle("Activate Kawa", isOn: Binding(
                         get: { sleepManager.isPreventingSleep },
@@ -27,7 +27,7 @@ struct GeneralSettingsView: View {
                             ClosedDisplayManager.setEnabled(newValue)
                         }
                     ))
-                    .help("Keeps your Mac awake even when the display is closed (clamshell mode)")
+                    // .help("Keeps your Mac awake even when the display is closed (clamshell mode)")
                 }
                 .padding()
             // }
