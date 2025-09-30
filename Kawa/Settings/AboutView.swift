@@ -98,3 +98,9 @@ struct AboutView: View {
     //     }
     // }
 // }
+
+// MARK: - Preview
+
+#Preview {
+    AboutView()
+}

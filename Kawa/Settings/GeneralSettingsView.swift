@@ -96,3 +96,9 @@ struct GeneralSettingsView: View {
         .padding(20)
     }
 }
+
+// MARK: - Preview
+
+#Preview {
+    GeneralSettingsView()
+}
