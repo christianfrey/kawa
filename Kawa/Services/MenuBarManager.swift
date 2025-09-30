@@ -2,25 +2,34 @@ import SwiftUI
 import AppKit // MenuBarExtra does not support right-click handling, so use NSStatusBar
 import Combine
 
-// Defines which mouse click is used for quick-starting a session
-enum QuickStartClickMode: String {
+// MARK: - Quick Start Click Mode
+
+enum QuickStartClickMode: String, CaseIterable {
     case left = "left"
     case right = "right"
+    
+    var displayName: String {
+        switch self {
+        case .left: return "Left Click"
+        case .right: return "Right Click"
+        }
+    }
 }
+
+// MARK: - UserDefaults Extension
 
 extension UserDefaults {
     private enum Keys {
         static let quickStartClickMode = "quickStartClickMode"
     }
     
-    // Store and retrieve the user preference for quick-start click mode
     var quickStartClickMode: QuickStartClickMode {
         get {
-            if let value = string(forKey: Keys.quickStartClickMode),
-               let mode = QuickStartClickMode(rawValue: value) {
-                return mode
+            guard let value = string(forKey: Keys.quickStartClickMode),
+                  let mode = QuickStartClickMode(rawValue: value) else {
+                return .right // Default mode
             }
-            return .right // Default mode: right-click quick-start
+            return mode
         }
         set {
             set(newValue.rawValue, forKey: Keys.quickStartClickMode)
@@ -31,38 +40,52 @@ extension UserDefaults {
 // MARK: - Menu Bar Manager
 
 @MainActor
-class MenuBarManager: NSObject, ObservableObject {
+final class MenuBarManager: NSObject, ObservableObject {
+    
+    // MARK: - Properties
+    
     private var statusItem: NSStatusItem?
     private let sleepManager = SleepPreventionManager.shared
     private let settingsState: SettingsState
     private var cancellables = Set<AnyCancellable>()
-
+    
+    @Published private(set) var quickStartClickMode: QuickStartClickMode = .right
+    
+    // MARK: - Initialization
+    
     init(settingsState: SettingsState) {
         self.settingsState = settingsState
         super.init()
-
-        // Setup the Menu Bar icon
-        setupMenuBarItem()
         
-        // Listen to sleep manager changes to update icon
+        loadInitialPreferences()
+        setupMenuBarItem()
         setupObservers()
+    }
+    
+    // MARK: - Setup Methods
+    
+    private func loadInitialPreferences() {
+        quickStartClickMode = UserDefaults.standard.quickStartClickMode
+        print("⚙️ Initial click mode: \(quickStartClickMode.displayName)")
     }
     
     private func setupMenuBarItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         
         guard let button = statusItem?.button else { return }
-
-        updateIcon()
         
-        // Configure click handlers for left and right clicks
+        updateIcon()
         button.action = #selector(statusItemClicked(_:))
         button.target = self
         button.sendAction(on: [.leftMouseUp, .rightMouseUp])
     }
     
     private func setupObservers() {
-        // Update icon when sleep state changes
+        observeSleepStateChanges()
+        observeUserDefaultsChanges()
+    }
+    
+    private func observeSleepStateChanges() {
         sleepManager.$isPreventingSleep
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -71,42 +94,65 @@ class MenuBarManager: NSObject, ObservableObject {
             .store(in: &cancellables)
     }
     
+    private func observeUserDefaultsChanges() {
+        NotificationCenter.default
+            .publisher(for: UserDefaults.didChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .compactMap { _ in UserDefaults.standard.quickStartClickMode }
+            .removeDuplicates()
+            .sink { [weak self] newMode in
+                self?.handleClickModeChange(newMode)
+            }
+            .store(in: &cancellables)
+    }
+    
+    // MARK: - Update Methods
+    
     private func updateIcon() {
         guard let button = statusItem?.button else { return }
         
         let iconName = sleepManager.isPreventingSleep ? "CoffeeCupHot" : "CoffeeBean"
         
         guard let image = NSImage(named: iconName) else { return }
-
         image.isTemplate = true
         button.image = image
     }
-
+    
+    private func handleClickModeChange(_ newMode: QuickStartClickMode) {
+        guard quickStartClickMode != newMode else { return }
+        
+        quickStartClickMode = newMode
+        print("⚙️ Click mode changed to: \(newMode.displayName)")
+    }
+    
+    // MARK: - Click Handler
+    
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
         guard let event = NSApp.currentEvent else { return }
-        let mode = UserDefaults.standard.quickStartClickMode
         
-        switch event.type {
-        case .leftMouseUp:
-            if mode == .left {
-                print("🖱️ Left click → toggle Kawa")
-                sleepManager.toggle()
-            } else {
-                print("🖱️ Left click → show menu")
-                showMenu()
-            }
-        case .rightMouseUp:
-            if mode == .right {
-                print("🖱️ Right click → toggle Kawa")
-                sleepManager.toggle()
-            } else {
-                print("🖱️ Right click → show menu")
-                showMenu()
-            }
-        default:
-            break
+        let isQuickAction = isQuickActionEvent(event)
+        
+        if isQuickAction {
+            print("🖱️ Quick action triggered → toggle Kawa")
+            sleepManager.toggle()
+        } else {
+            print("🖱️ Menu action triggered → show menu")
+            showMenu()
         }
     }
+    
+    private func isQuickActionEvent(_ event: NSEvent) -> Bool {
+        switch event.type {
+        case .leftMouseUp:
+            return quickStartClickMode == .left
+        case .rightMouseUp:
+            return quickStartClickMode == .right
+        default:
+            return false
+        }
+    }
+    
+    // MARK: - Menu Building
     
     private func showMenu() {
         let menu = NSMenu()
@@ -141,13 +187,13 @@ class MenuBarManager: NSObject, ObservableObject {
         statusItem?.button?.performClick(nil)
         statusItem?.menu = nil
     }
-
+    
     // MARK: - Menu Actions
     
     @objc private func toggleCaffeinate() {
         sleepManager.toggle()
     }
-
+    
     @objc private func openSettings() {
         settingsState.selectedTab = .general
         openSettingsWindow()
