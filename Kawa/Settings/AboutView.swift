@@ -7,7 +7,7 @@ struct AboutView: View {
         VStack(spacing: 12) {
             Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
-                .frame(width: 96, height: 96)
+                .frame(width: 128, height: 128)
                 .cornerRadius(8)
 
             Text("Kawa")
