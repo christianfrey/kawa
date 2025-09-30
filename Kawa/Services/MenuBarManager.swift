@@ -33,13 +33,17 @@ class MenuBarManager: NSObject, ObservableObject {
     private var statusItem: NSStatusItem?
     private let sleepManager = SleepPreventionManager.shared
     private var settingsState: SettingsState
-    
-    var openSettingsAction: (() -> Void)?
+    private var cancellables = Set<AnyCancellable>()
 
     init(settingsState: SettingsState) {
         self.settingsState = settingsState
         super.init()
+
+        // Setup the Menu Bar icon
         setupMenuBarItem()
+        
+        // Listen to sleep manager changes to update icon
+        setupObservers()
     }
     
     private func setupMenuBarItem() {
@@ -53,9 +57,6 @@ class MenuBarManager: NSObject, ObservableObject {
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
-        
-        // Listen to sleep manager changes to update icon
-        setupObservers()
     }
     
     private func setupObservers() {
@@ -67,8 +68,6 @@ class MenuBarManager: NSObject, ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
-    private var cancellables = Set<AnyCancellable>()
     
     private func updateIcon() {
         guard let button = statusItem?.button else { return }

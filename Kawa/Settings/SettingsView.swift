@@ -17,7 +17,7 @@ struct SettingsView: View {
             NotificationsSettingsView()
                 .tag(SettingsTab.notifications)
                 .tabItem {
-                    Label("Notifications", systemImage: "bell")
+                    Label("Notifications", systemImage: "bell.badge")
                 }
             
             AboutView()
