@@ -21,7 +21,7 @@ enum ClosedDisplayManager {
             print("❌ IOServiceGetMatchingService failed (no service found)")
             return false
         }
-        print("✅ Got IOPMrootDomain service: \(service)")
+        // print("✅ Got IOPMrootDomain service: \(service)")
         
         // Open a connection to the root domain
         var connect: io_connect_t = 0
@@ -31,7 +31,7 @@ enum ClosedDisplayManager {
             print("❌ IOServiceOpen failed: \(String(format: "0x%08x", kr))")
             return false
         }
-        print("✅ IOServiceOpen succeeded, connect=\(connect)")
+        // print("✅ IOServiceOpen succeeded, connect=\(connect)")
         
         // Prepare input and selector
         var input: UInt64 = enabled ? 1 : 0
@@ -48,9 +48,9 @@ enum ClosedDisplayManager {
             return false
         }
         
-        print("✅ IOConnectCallScalarMethod succeeded, closed-display mode = \(enabled)")
+        // print("✅ IOConnectCallScalarMethod succeeded, closed-display mode = \(enabled)")
         IOServiceClose(connect)
-        print("🔻 IOServiceClose done")
+        // print("🔻 IOServiceClose done")
         return true
     }
 }
