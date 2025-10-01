@@ -50,6 +50,7 @@ class SleepPreventionManager: ObservableObject {
     // A single dictionary to manage all active assertions.
     private var activeAssertionIDs: [AssertionType: IOPMAssertionID] = [:]
     private var powerSourceRunLoopSource: CFRunLoopSource?
+    private var sessionTimer: Timer?
 
     private init() {
         let shouldStartOnLaunch = UserDefaults.standard.bool(forKey: "startSessionOnLaunch")
@@ -70,6 +71,8 @@ class SleepPreventionManager: ObservableObject {
         activeAssertionIDs.values.forEach { IOPMAssertionRelease($0) }
         activeAssertionIDs.removeAll()
         
+        sessionTimer?.invalidate()
+        
         // Clean up power source notification
         if let source = powerSourceRunLoopSource {
             CFRunLoopRemoveSource(CFRunLoopGetCurrent(), source, .defaultMode)
@@ -89,7 +92,39 @@ class SleepPreventionManager: ObservableObject {
 
     /// The main function that decides which assertions should be active.
     private func updateSleepPrevention() {
-        // print("🔹 Updating sleep prevention state...")
+        sessionTimer?.invalidate()
+
+        if isPreventingSleep {
+            let timeInterval: TimeInterval?
+            let durationLabel: String
+
+            if UserDefaults.standard.bool(forKey: "isCustomDurationEnabled") {
+                let value = UserDefaults.standard.integer(forKey: "customDurationValue")
+                let unit = UserDefaults.standard.string(forKey: "customDurationUnit") ?? "minutes"
+                
+                if value > 0 {
+                    timeInterval = unit == "hours" ? TimeInterval(value * 3600) : TimeInterval(value * 60)
+                    durationLabel = "\(value) \(unit)"
+                } else {
+                    timeInterval = nil
+                    durationLabel = "indefinitely"
+                }
+            } else {
+                let durationRaw = UserDefaults.standard.string(forKey: "defaultDuration") ?? DefaultDuration.indefinitely.rawValue
+                let duration = DefaultDuration(rawValue: durationRaw) ?? .indefinitely
+                timeInterval = duration.timeInterval
+                durationLabel = duration.rawValue
+            }
+            
+            if let interval = timeInterval {
+                sessionTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
+                    Task { @MainActor in
+                        self?.isPreventingSleep = false
+                        print("⏳ Session ended automatically after \(durationLabel).")
+                    }
+                }
+            }
+        }
 
         // Determine the desired state for each assertion.
         let shouldPreventSystemSleep = isPreventingSleep

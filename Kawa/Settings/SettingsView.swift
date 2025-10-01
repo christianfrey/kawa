@@ -14,6 +14,12 @@ struct SettingsView: View {
                     Label("General", systemImage: "gear")
                 }
 
+            DurationSettingsView()
+                .tag(SettingsTab.duration)
+                .tabItem {
+                    Label("Duration", systemImage: "timer")
+                }
+
             NotificationsSettingsView()
                 .tag(SettingsTab.notifications)
                 .tabItem {
