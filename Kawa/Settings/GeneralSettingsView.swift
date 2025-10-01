@@ -14,6 +14,12 @@ struct GeneralSettingsView: View {
     @AppStorage("preventLidSleep")
     private var preventLidSleep: Bool = false
     
+    @AppStorage("endSessionOnManualSleep")
+    private var endSessionOnManualSleep: Bool = false
+    
+    @AppStorage("startSessionAfterWakingFromSleep")
+    private var startSessionAfterWakingFromSleep: Bool = false
+    
     @AppStorage("quickStartClickMode")
     private var quickStartClickModeRaw: String = QuickStartClickMode.right.rawValue
     
@@ -61,6 +67,12 @@ struct GeneralSettingsView: View {
                     
                     Toggle("Prevent sleep when display is closed", isOn: isLidSleepPrevented)
                         .help("Keeps your Mac awake even with the lid closed (laptops only)")
+                    
+                    Toggle("End session on manual sleep", isOn: $endSessionOnManualSleep)
+                        .help("Stops the Kawa session when you manually put your Mac to sleep.")
+                    
+                    Toggle("Start session after waking from sleep", isOn: $startSessionAfterWakingFromSleep)
+                        .help("Automatically starts a new Kawa session when your Mac wakes up.")
                 }
                 
                 Spacer()

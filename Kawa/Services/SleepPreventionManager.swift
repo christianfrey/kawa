@@ -76,8 +76,9 @@ class SleepPreventionManager: ObservableObject {
         }
         
         NotificationCenter.default.removeObserver(self)
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
-
+    
     // MARK: - Public Methods
     
     func toggle() {
@@ -141,11 +142,31 @@ class SleepPreventionManager: ObservableObject {
     private func setupNotifications() {
         let workspaceCenter = NSWorkspace.shared.notificationCenter
         workspaceCenter.addObserver(self, selector: #selector(systemStatusDidChange), name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        
+        // Listen for sleep/wake notifications
+        workspaceCenter.addObserver(self, selector: #selector(systemWillSleep), name: NSWorkspace.willSleepNotification, object: nil)
+        workspaceCenter.addObserver(self, selector: #selector(systemDidWake), name: NSWorkspace.didWakeNotification, object: nil)
 
         // Setup power source notification with C callback
         setupPowerSourceNotification()
 
         // print("📌 Notifications configured")
+    }
+    
+    @objc private func systemWillSleep(_ notification: Notification) {
+        guard UserDefaults.standard.bool(forKey: "endSessionOnManualSleep"),
+            isPreventingSleep else { return }
+        
+        isPreventingSleep = false
+        print("💤 System will sleep, ending session as per user preference.")
+    }
+
+    @objc private func systemDidWake(_ notification: Notification) {
+        guard UserDefaults.standard.bool(forKey: "startSessionAfterWakingFromSleep"),
+            !isPreventingSleep else { return }
+        
+        isPreventingSleep = true
+        print("🌅 System did wake, starting session as per user preference.")
     }
     
     private func setupPowerSourceNotification() {
