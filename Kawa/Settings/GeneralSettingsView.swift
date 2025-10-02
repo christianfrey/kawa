@@ -11,6 +11,9 @@ struct GeneralSettingsView: View {
     @AppStorage("startSessionOnLaunch")
     private var startSessionOnLaunch: Bool = false
     
+    @AppStorage("allowDisplaySleep")
+    private var allowDisplaySleep: Bool = false
+    
     @AppStorage("preventLidSleep")
     private var preventLidSleep: Bool = false
     
@@ -64,6 +67,9 @@ struct GeneralSettingsView: View {
                     
                     Toggle("Start session when app launches", isOn: $startSessionOnLaunch)
                         .help("Automatically activates Kawa when the application starts.")
+                    
+                    Toggle("Allow display sleep", isOn: $allowDisplaySleep)
+                        .help("Lets the display sleep even when Kawa is active.")
                     
                     Toggle("Prevent sleep when display is closed", isOn: isLidSleepPrevented)
                         .help("Keeps your Mac awake even with the lid closed (laptops only)")

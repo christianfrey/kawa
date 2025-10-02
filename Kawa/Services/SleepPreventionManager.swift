@@ -128,7 +128,8 @@ class SleepPreventionManager: ObservableObject {
 
         // Determine the desired state for each assertion.
         let shouldPreventSystemSleep = isPreventingSleep
-        let shouldPreventDisplaySleep = isPreventingSleep
+        let allowDisplaySleep = UserDefaults.standard.bool(forKey: "allowDisplaySleep")
+        let shouldPreventDisplaySleep = isPreventingSleep && !allowDisplaySleep
         //let shouldPreventNoIdle = isPreventingSleep && isOnBattery // Only if requested AND on battery.
 
         // Apply the desired state.
