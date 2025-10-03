@@ -49,29 +49,86 @@ final class MenuBarManager: NSObject, ObservableObject {
     private let settingsState: SettingsState
     private var cancellables = Set<AnyCancellable>()
     
+    private let remainingTimeMenuItem = NSMenuItem()
+    private var remainingTimeValueLabel: NSTextField?
+    
     @Published private(set) var quickStartClickMode: QuickStartClickMode = .right
     
     // MARK: - Initialization
-    
+
     init(settingsState: SettingsState) {
         self.settingsState = settingsState
         super.init()
         
         loadInitialPreferences()
+        setupRemainingTimeItem()
         setupMenuBarItem()
         setupObservers()
     }
     
-    // MARK: - Setup Methods
-    
+    // MARK: - Setup
+
     private func loadInitialPreferences() {
         quickStartClickMode = UserDefaults.standard.quickStartClickMode
         print("⚙️ Initial click mode: \(quickStartClickMode.displayName)")
     }
     
+    private func setupRemainingTimeItem() {
+        enum Constants {
+            static let viewWidth: CGFloat = 200.0
+            static let viewHeight: CGFloat = 42.0
+            static let horizontalPadding: CGFloat = 13.0
+            static let spacing: CGFloat = 4.0
+            static let fontSize: CGFloat = 13.0
+        }
+
+        // Container view
+        let container = NSView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        // container.wantsLayer = true
+        // container.layer?.backgroundColor = NSColor.systemBlue.withAlphaComponent(0.1).cgColor
+        remainingTimeMenuItem.view = container
+        remainingTimeMenuItem.isHidden = true
+
+        // Title label
+        let titleLabel = NSTextField(labelWithString: "Remaining time:")
+        titleLabel.font = NSFont.menuFont(ofSize: Constants.fontSize)
+        titleLabel.textColor = .labelColor
+        titleLabel.alignment = .left
+        // titleLabel.drawsBackground = true
+        // titleLabel.backgroundColor = .systemRed.withAlphaComponent(0.3)
+
+        // Value label
+        let valueLabel = NSTextField(labelWithString: "")
+        valueLabel.font = NSFont.menuFont(ofSize: Constants.fontSize)
+        valueLabel.textColor = .secondaryLabelColor
+        valueLabel.alignment = .left
+        valueLabel.identifier = NSUserInterfaceItemIdentifier("RemainingTimeValue")
+        // valueLabel.drawsBackground = true
+        // valueLabel.backgroundColor = .systemGreen.withAlphaComponent(0.3)
+        self.remainingTimeValueLabel = valueLabel
+
+        // Stack view vertical
+        let stackView = NSStackView(views: [titleLabel, valueLabel])
+        stackView.orientation = .vertical
+        stackView.alignment = .leading
+        stackView.spacing = Constants.spacing
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(stackView)
+
+        // Constraints
+        NSLayoutConstraint.activate([
+            container.widthAnchor.constraint(equalToConstant: Constants.viewWidth),
+            container.heightAnchor.constraint(equalToConstant: Constants.viewHeight),
+
+            stackView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: Constants.horizontalPadding),
+            stackView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -Constants.horizontalPadding),
+            stackView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+        ])
+    }
+
     private func setupMenuBarItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        
         guard let button = statusItem?.button else { return }
         
         updateIcon()
@@ -83,6 +140,7 @@ final class MenuBarManager: NSObject, ObservableObject {
     private func setupObservers() {
         observeSleepStateChanges()
         observeUserDefaultsChanges()
+        observeRemainingTimeChanges()
     }
     
     private func observeSleepStateChanges() {
@@ -106,8 +164,17 @@ final class MenuBarManager: NSObject, ObservableObject {
             .store(in: &cancellables)
     }
     
-    // MARK: - Update Methods
+    private func observeRemainingTimeChanges() {
+        sleepManager.$remainingTimeFormatted
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] remainingTime in
+                self?.updateRemainingTimeMenuItem(with: remainingTime)
+            }
+            .store(in: &cancellables)
+    }
     
+    // MARK: - Update Methods
+
     private func updateIcon() {
         guard let button = statusItem?.button else { return }
         
@@ -125,8 +192,16 @@ final class MenuBarManager: NSObject, ObservableObject {
         print("⚙️ Click mode changed to: \(newMode.displayName)")
     }
     
-    // MARK: - Click Handler
+    private func updateRemainingTimeMenuItem(with remainingTime: String) {
+        let shouldShow = !remainingTime.isEmpty && sleepManager.isPreventingSleep
+        remainingTimeMenuItem.isHidden = !shouldShow
+        
+        if shouldShow {
+            remainingTimeValueLabel?.stringValue = remainingTime
+        }
+    }
     
+    // MARK: - Click Handler
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
         guard let event = NSApp.currentEvent else { return }
         
@@ -157,7 +232,13 @@ final class MenuBarManager: NSObject, ObservableObject {
     private func showMenu() {
         let menu = NSMenu()
         
-        // Toggle menu item
+        // Remaining time block
+        if !remainingTimeMenuItem.isHidden {
+            menu.addItem(remainingTimeMenuItem)
+            menu.addItem(NSMenuItem.separator())
+        }
+        
+        // Toggle
         let toggleTitle = sleepManager.isPreventingSleep ? "Deactivate Kawa" : "Activate Kawa"
         let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleCaffeinate), keyEquivalent: "")
         toggleItem.target = self
@@ -165,31 +246,29 @@ final class MenuBarManager: NSObject, ObservableObject {
         
         menu.addItem(NSMenuItem.separator())
         
-        // About menu item
+        // About
         let aboutItem = NSMenuItem(title: "About Kawa", action: #selector(openAbout), keyEquivalent: "")
         aboutItem.target = self
         menu.addItem(aboutItem)
         
-        // Settings menu item
+        // Settings
         let settingsItem = NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)
         
         menu.addItem(NSMenuItem.separator())
         
-        // Quit menu item
+        // Quit
         let quitItem = NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
         
-        // Show the menu
         statusItem?.menu = menu
         statusItem?.button?.performClick(nil)
         statusItem?.menu = nil
     }
     
     // MARK: - Menu Actions
-    
     @objc private func toggleCaffeinate() {
         sleepManager.toggle()
     }

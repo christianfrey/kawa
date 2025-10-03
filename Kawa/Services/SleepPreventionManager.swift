@@ -3,6 +3,7 @@ import IOKit.pwr_mgt
 import IOKit.ps
 import AppKit
 import UserNotifications
+import Combine
 
 @MainActor
 class SleepPreventionManager: ObservableObject {
@@ -18,6 +19,11 @@ class SleepPreventionManager: ObservableObject {
 
     @Published private(set) var isOnBattery: Bool = false
     @Published private(set) var hasExternalDisplay: Bool = false
+    @Published private(set) var remainingTimeFormatted: String = ""
+    
+    private var deactivationDate: Date?
+    private var countdownTimer: Timer?
+
 
     // Enum to define assertion types in a clean and safe way.
     private enum AssertionType: Hashable {
@@ -72,6 +78,7 @@ class SleepPreventionManager: ObservableObject {
         activeAssertionIDs.removeAll()
         
         sessionTimer?.invalidate()
+        countdownTimer?.invalidate()
         
         // Clean up power source notification
         if let source = powerSourceRunLoopSource {
@@ -93,6 +100,9 @@ class SleepPreventionManager: ObservableObject {
     /// The main function that decides which assertions should be active.
     private func updateSleepPrevention() {
         sessionTimer?.invalidate()
+        countdownTimer?.invalidate()
+        deactivationDate = nil
+        remainingTimeFormatted = ""
 
         if isPreventingSleep {
             let timeInterval: TimeInterval?
@@ -117,12 +127,27 @@ class SleepPreventionManager: ObservableObject {
             }
             
             if let interval = timeInterval {
-                sessionTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
+                deactivationDate = Date().addingTimeInterval(interval)
+                
+                let sessionTimer = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
                     Task { @MainActor in
                         self?.isPreventingSleep = false
                         print("⏳ Session ended automatically after \(durationLabel).")
                     }
                 }
+                RunLoop.current.add(sessionTimer, forMode: .common)
+                self.sessionTimer = sessionTimer
+                
+                let countdownTimer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
+                    Task { @MainActor in
+                        self?.updateRemainingTime()
+                    }
+                }
+                RunLoop.current.add(countdownTimer, forMode: .common)
+                self.countdownTimer = countdownTimer
+                updateRemainingTime()
+            } else {
+                remainingTimeFormatted = "Indefinite"
             }
         }
 
@@ -137,6 +162,34 @@ class SleepPreventionManager: ObservableObject {
         manageAssertion(type: .preventDisplaySleep, enable: shouldPreventDisplaySleep)
         //manageAssertion(type: .preventNoIdle, enable: shouldPreventNoIdle)
     }
+    
+    private func updateRemainingTime() {
+        guard let deactivationDate = deactivationDate else {
+            remainingTimeFormatted = ""
+            return
+        }
+        
+        let remaining = deactivationDate.timeIntervalSinceNow
+        
+        if remaining > 0 {
+            let formatter = DateComponentsFormatter()
+            formatter.allowedUnits = [.hour, .minute, .second]
+            formatter.unitsStyle = .positional
+            formatter.zeroFormattingBehavior = .pad
+            
+            let remainingString = formatter.string(from: remaining) ?? ""
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "HH:mm"
+            let endTimeString = dateFormatter.string(from: deactivationDate)
+            
+            remainingTimeFormatted = "\(remainingString) (until \(endTimeString))"
+        } else {
+            remainingTimeFormatted = ""
+            countdownTimer?.invalidate()
+        }
+    }
+
 
     /// A single function to create or release an assertion.
     private func manageAssertion(type: AssertionType, enable: Bool) {
