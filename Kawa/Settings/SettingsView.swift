@@ -20,6 +20,12 @@ struct SettingsView: View {
                     Label("Duration", systemImage: "timer")
                 }
 
+            BatterySettingsView()
+                .tag(SettingsTab.battery)
+                .tabItem {
+                    Label("Battery", systemImage: "battery.75")
+                }
+
             NotificationsSettingsView()
                 .tag(SettingsTab.notifications)
                 .tabItem {

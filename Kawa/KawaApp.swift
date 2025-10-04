@@ -3,6 +3,7 @@ import SwiftUI
 enum SettingsTab: Int {
     case general
     case duration
+    case battery
     case notifications
     case about
 }

@@ -18,6 +18,7 @@ class SleepPreventionManager: ObservableObject {
     }
 
     @Published private(set) var isOnBattery: Bool = false
+    @Published private(set) var batteryLevel: Int = 100
     @Published private(set) var hasExternalDisplay: Bool = false
     @Published private(set) var remainingTimeFormatted: String = ""
     
@@ -95,6 +96,16 @@ class SleepPreventionManager: ObservableObject {
         isPreventingSleep.toggle()
     }
     
+    // MARK: - Battery Check
+    
+    private func shouldSkipDueToBattery() -> Bool {
+        let deactivateOnLowBattery = UserDefaults.standard.bool(forKey: "deactivateOnLowBattery")
+        guard deactivateOnLowBattery && isOnBattery else { return false }
+        
+        let threshold = UserDefaults.standard.double(forKey: "batteryThreshold")
+        return Double(batteryLevel) < threshold
+    }
+    
     // MARK: - Core Logic
 
     /// The main function that decides which assertions should be active.
@@ -105,6 +116,14 @@ class SleepPreventionManager: ObservableObject {
         remainingTimeFormatted = ""
 
         if isPreventingSleep {
+            // Check battery level before starting prevention
+            if shouldSkipDueToBattery() {
+                print("🔋 Prevention skipped: battery level too low (\(batteryLevel)%)")
+                isPreventingSleep = false
+                sendNotification(title: "Kawa", message: "Prevention disabled: battery level too low (\(batteryLevel)%)")
+                return
+            }
+            
             let timeInterval: TimeInterval?
             let durationLabel: String
 
@@ -274,6 +293,15 @@ class SleepPreventionManager: ObservableObject {
     @objc internal func systemStatusDidChange() {
         // print("🔄 System status changed, updating...")
         updateSystemStatus()
+        
+        // If prevention is active and battery is now too low, disable it
+        if isPreventingSleep && shouldSkipDueToBattery() {
+            print("🔋 Battery too low, disabling prevention")
+            isPreventingSleep = false
+            sendNotification(title: "Kawa", message: "Prevention disabled: battery level too low (\(batteryLevel)%)")
+            return
+        }
+        
         updateSleepPrevention() // Re-apply the logic with the new state.
     }
 
@@ -281,15 +309,33 @@ class SleepPreventionManager: ObservableObject {
         // Update battery status.
         let powerInfo = IOPSCopyPowerSourcesInfo().takeRetainedValue()
         let sources = IOPSCopyPowerSourcesList(powerInfo).takeRetainedValue() as [CFTypeRef]
-        self.isOnBattery = !sources.contains {
-            guard let dict = $0 as? [String: Any] else { return false }
-            return dict[kIOPSPowerSourceStateKey] as? String == kIOPSACPowerValue
+        
+        var isOnAC = false
+        var currentBatteryLevel = 100
+        
+        for source in sources {
+            guard let dict = source as? [String: Any] else { continue }
+            
+            // Check if on AC power
+            if dict[kIOPSPowerSourceStateKey] as? String == kIOPSACPowerValue {
+                isOnAC = true
+            }
+            
+            // Get battery level
+            if let currentCapacity = dict[kIOPSCurrentCapacityKey] as? Int,
+               let maxCapacity = dict[kIOPSMaxCapacityKey] as? Int,
+               maxCapacity > 0 {
+                currentBatteryLevel = (currentCapacity * 100) / maxCapacity
+            }
         }
+        
+        self.isOnBattery = !isOnAC
+        self.batteryLevel = currentBatteryLevel
 
         // Update display status.
         self.hasExternalDisplay = NSScreen.screens.count > 1
 
-        // print("ℹ️ Current state: isOnBattery=\(isOnBattery), hasExternalDisplay=\(hasExternalDisplay)")
+        // print("ℹ️ Current state: isOnBattery=\(isOnBattery), batteryLevel=\(batteryLevel)%, hasExternalDisplay=\(hasExternalDisplay)")
     }
     
     private func startPreventingSleep() {
