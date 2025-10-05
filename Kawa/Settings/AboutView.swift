@@ -26,10 +26,8 @@ struct AboutView: View {
                 Link("GitHub Repository", destination: url)
                     .padding(.top, 6)
             }
-
-            Spacer()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
         .padding()
     }
 }
@@ -39,5 +37,5 @@ struct AboutView: View {
 #Preview {
     AboutView()
         .padding(20)
-        .frame(width: 600, height: 300)
+        .frame(width: 600)
 }

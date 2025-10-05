@@ -120,11 +120,7 @@ struct DurationSettingsView: View {
                     .disabled(!isCustomDurationEnabled)
                     .foregroundColor(isCustomDurationEnabled ? .primary : .gray)
                 }
-                
-                Spacer()
             }
-            
-            Spacer()
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -136,5 +132,5 @@ struct DurationSettingsView: View {
 #Preview {
     DurationSettingsView()
         .padding(20)
-        .frame(width: 600, height: 300)
+        .frame(width: 600)
 }

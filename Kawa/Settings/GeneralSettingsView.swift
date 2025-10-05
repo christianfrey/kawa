@@ -107,11 +107,7 @@ struct GeneralSettingsView: View {
                         .foregroundColor(.secondary)
                         .padding(.leading, 0)
                 }
-                
-                Spacer()
             }
-            
-            Spacer()
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -131,5 +127,5 @@ struct GeneralSettingsView: View {
 #Preview {
     GeneralSettingsView()
         .padding(20)
-        .frame(width: 600, height: 300)
+        .frame(width: 600)
 }

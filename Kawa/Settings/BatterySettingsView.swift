@@ -35,17 +35,14 @@ struct BatterySettingsView: View {
                 Slider(value: $batteryThreshold, in: 10...90, step: 5)
                     .disabled(!deactivateOnLowBattery)
             }
-            .padding(.leading, 20)
-            
-            Spacer()
         }
         .padding(20)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 #Preview {
     BatterySettingsView()
         .padding(20)
-        .frame(width: 600, height: 300)
+        .frame(width: 600)
 }
