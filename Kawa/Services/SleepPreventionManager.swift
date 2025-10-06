@@ -1,6 +1,5 @@
 import Foundation
 import IOKit.pwr_mgt
-import IOKit.ps
 import AppKit
 import UserNotifications
 import Combine
@@ -17,20 +16,17 @@ class SleepPreventionManager: ObservableObject {
         }
     }
 
-    @Published private(set) var isOnBattery: Bool = false
-    @Published private(set) var batteryLevel: Int = 100
     @Published private(set) var hasExternalDisplay: Bool = false
     @Published private(set) var remainingTimeFormatted: String = ""
     
     private var deactivationDate: Date?
     private var countdownTimer: Timer?
-
+    private let batteryMonitor: BatteryMonitor
 
     // Enum to define assertion types in a clean and safe way.
     private enum AssertionType: Hashable {
         case preventSystemSleep
         case preventDisplaySleep
-        //case preventNoIdle
 
         // https://developer.apple.com/documentation/iokit/iopmlib_h/iopmassertiontypes
         var name: CFString {
@@ -39,9 +35,6 @@ class SleepPreventionManager: ObservableObject {
             case .preventSystemSleep: return "PreventUserIdleSystemSleep" as CFString
             // Prevents the display from dimming automatically
             case .preventDisplaySleep: return "PreventUserIdleDisplaySleep" as CFString
-            // The system will not idle sleep when enabled (display may sleep).
-            // Note that the system may sleep for other reasons.
-            //case .preventNoIdle: return "NoIdleSleepAssertion" as CFString
             }
         }
 
@@ -49,17 +42,18 @@ class SleepPreventionManager: ObservableObject {
             switch self {
             case .preventSystemSleep: return "Kawa: Preventing system sleep" as CFString
             case .preventDisplaySleep: return "Kawa: Preventing display sleep" as CFString
-            //case .preventNoIdle: return "Kawa: Preventing idle sleep on battery" as CFString
             }
         }
     }
 
     // A single dictionary to manage all active assertions.
     private var activeAssertionIDs: [AssertionType: IOPMAssertionID] = [:]
-    private var powerSourceRunLoopSource: CFRunLoopSource?
     private var sessionTimer: Timer?
 
     private init() {
+        // Initialize battery monitor without callback first
+        batteryMonitor = BatteryMonitor()
+        
         let shouldStartOnLaunch = UserDefaults.standard.bool(forKey: "startSessionOnLaunch")
         self.isPreventingSleep = shouldStartOnLaunch
         
@@ -68,8 +62,15 @@ class SleepPreventionManager: ObservableObject {
         }
 
         setupNotifications()
-        updateSystemStatus()
+        updateDisplayStatus()
         updateSleepPrevention()
+        
+        // Set the callback after self is fully initialized
+        batteryMonitor.onStatusChange = { [weak self] in
+            Task { @MainActor in
+                self?.handleBatteryStatusChange()
+            }
+        }
     }
 
     deinit {
@@ -80,11 +81,6 @@ class SleepPreventionManager: ObservableObject {
         
         sessionTimer?.invalidate()
         countdownTimer?.invalidate()
-        
-        // Clean up power source notification
-        if let source = powerSourceRunLoopSource {
-            CFRunLoopRemoveSource(CFRunLoopGetCurrent(), source, .defaultMode)
-        }
         
         NotificationCenter.default.removeObserver(self)
         NSWorkspace.shared.notificationCenter.removeObserver(self)
@@ -98,12 +94,16 @@ class SleepPreventionManager: ObservableObject {
     
     // MARK: - Battery Check
     
-    private func shouldSkipDueToBattery() -> Bool {
-        let deactivateOnLowBattery = UserDefaults.standard.bool(forKey: "deactivateOnLowBattery")
-        guard deactivateOnLowBattery && isOnBattery else { return false }
-        
-        let threshold = UserDefaults.standard.double(forKey: "batteryThreshold")
-        return Double(batteryLevel) < threshold
+    private func handleBatteryStatusChange() {
+        // If prevention is active and battery is now too low, disable it
+        if isPreventingSleep && batteryMonitor.shouldDeactivatePrevention() {
+            print("🔋 Battery too low (\(batteryMonitor.batteryLevel)%), disabling prevention")
+            isPreventingSleep = false
+            sendNotification(
+                title: "Kawa",
+                message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)"
+            )
+        }
     }
     
     // MARK: - Core Logic
@@ -117,10 +117,13 @@ class SleepPreventionManager: ObservableObject {
 
         if isPreventingSleep {
             // Check battery level before starting prevention
-            if shouldSkipDueToBattery() {
-                print("🔋 Prevention skipped: battery level too low (\(batteryLevel)%)")
+            if batteryMonitor.shouldDeactivatePrevention() {
+                print("🔋 Prevention skipped: battery level too low (\(batteryMonitor.batteryLevel)%)")
                 isPreventingSleep = false
-                sendNotification(title: "Kawa", message: "Prevention disabled: battery level too low (\(batteryLevel)%)")
+                sendNotification(
+                    title: "Kawa",
+                    message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)"
+                )
                 return
             }
             
@@ -174,12 +177,10 @@ class SleepPreventionManager: ObservableObject {
         let shouldPreventSystemSleep = isPreventingSleep
         let allowDisplaySleep = UserDefaults.standard.bool(forKey: "allowDisplaySleep")
         let shouldPreventDisplaySleep = isPreventingSleep && !allowDisplaySleep
-        //let shouldPreventNoIdle = isPreventingSleep && isOnBattery // Only if requested AND on battery.
 
         // Apply the desired state.
         manageAssertion(type: .preventSystemSleep, enable: shouldPreventSystemSleep)
         manageAssertion(type: .preventDisplaySleep, enable: shouldPreventDisplaySleep)
-        //manageAssertion(type: .preventNoIdle, enable: shouldPreventNoIdle)
     }
     
     private func updateRemainingTime() {
@@ -208,7 +209,6 @@ class SleepPreventionManager: ObservableObject {
             countdownTimer?.invalidate()
         }
     }
-
 
     /// A single function to create or release an assertion.
     private func manageAssertion(type: AssertionType, enable: Bool) {
@@ -249,14 +249,26 @@ class SleepPreventionManager: ObservableObject {
 
     private func setupNotifications() {
         let workspaceCenter = NSWorkspace.shared.notificationCenter
-        workspaceCenter.addObserver(self, selector: #selector(systemStatusDidChange), name: NSApplication.didChangeScreenParametersNotification, object: nil)
+        workspaceCenter.addObserver(
+            self,
+            selector: #selector(displayConfigurationChanged),
+            name: NSApplication.didChangeScreenParametersNotification,
+            object: nil
+        )
         
         // Listen for sleep/wake notifications
-        workspaceCenter.addObserver(self, selector: #selector(systemWillSleep), name: NSWorkspace.willSleepNotification, object: nil)
-        workspaceCenter.addObserver(self, selector: #selector(systemDidWake), name: NSWorkspace.didWakeNotification, object: nil)
-
-        // Setup power source notification with C callback
-        setupPowerSourceNotification()
+        workspaceCenter.addObserver(
+            self,
+            selector: #selector(systemWillSleep),
+            name: NSWorkspace.willSleepNotification,
+            object: nil
+        )
+        workspaceCenter.addObserver(
+            self,
+            selector: #selector(systemDidWake),
+            name: NSWorkspace.didWakeNotification,
+            object: nil
+        )
 
         // print("📌 Notifications configured")
     }
@@ -276,66 +288,15 @@ class SleepPreventionManager: ObservableObject {
         isPreventingSleep = true
         print("🌅 System did wake, starting session as per user preference.")
     }
-    
-    private func setupPowerSourceNotification() {
-        // Create context to pass the instance
-        let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
-        
-        // Create the notification source with C callback
-        powerSourceRunLoopSource = IOPSNotificationCreateRunLoopSource(powerSourceCallback, context)?.takeRetainedValue()
-        
-        if let source = powerSourceRunLoopSource {
-            CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .defaultMode)
-        }
+
+    @objc private func displayConfigurationChanged() {
+        // print("🔄 Display configuration changed, updating...")
+        updateDisplayStatus()
     }
 
-    /// Updates the system status (battery, screens) and re-evaluates assertions.
-    @objc internal func systemStatusDidChange() {
-        // print("🔄 System status changed, updating...")
-        updateSystemStatus()
-        
-        // If prevention is active and battery is now too low, disable it
-        if isPreventingSleep && shouldSkipDueToBattery() {
-            print("🔋 Battery too low, disabling prevention")
-            isPreventingSleep = false
-            sendNotification(title: "Kawa", message: "Prevention disabled: battery level too low (\(batteryLevel)%)")
-            return
-        }
-        
-        updateSleepPrevention() // Re-apply the logic with the new state.
-    }
-
-    private func updateSystemStatus() {
-        // Update battery status.
-        let powerInfo = IOPSCopyPowerSourcesInfo().takeRetainedValue()
-        let sources = IOPSCopyPowerSourcesList(powerInfo).takeRetainedValue() as [CFTypeRef]
-        
-        var isOnAC = false
-        var currentBatteryLevel = 100
-        
-        for source in sources {
-            guard let dict = source as? [String: Any] else { continue }
-            
-            // Check if on AC power
-            if dict[kIOPSPowerSourceStateKey] as? String == kIOPSACPowerValue {
-                isOnAC = true
-            }
-            
-            // Get battery level
-            if let currentCapacity = dict[kIOPSCurrentCapacityKey] as? Int,
-               let maxCapacity = dict[kIOPSMaxCapacityKey] as? Int,
-               maxCapacity > 0 {
-                currentBatteryLevel = (currentCapacity * 100) / maxCapacity
-            }
-        }
-        
-        self.isOnBattery = !isOnAC
-        self.batteryLevel = currentBatteryLevel
-
-        // Update display status.
+    private func updateDisplayStatus() {
         self.hasExternalDisplay = NSScreen.screens.count > 1
-
-        // print("ℹ️ Current state: isOnBattery=\(isOnBattery), batteryLevel=\(batteryLevel)%, hasExternalDisplay=\(hasExternalDisplay)")
+        // print("ℹ️ Current state: hasExternalDisplay=\(hasExternalDisplay)")
     }
     
     private func startPreventingSleep() {
@@ -349,7 +310,6 @@ class SleepPreventionManager: ObservableObject {
     }
     
     private func sendNotification(title: String, message: String) {
-
         // Check user preference
         guard UserDefaults.standard.bool(forKey: "notificationsEnabled") else { return }
         
@@ -383,19 +343,5 @@ class SleepPreventionManager: ObservableObject {
                 }
             }
         }
-    }
-}
-
-// MARK: - C Callback Function
-// This function must be at the top level (not inside the class) to work with C APIs
-private func powerSourceCallback(context: UnsafeMutableRawPointer?) {
-    guard let context = context else { return }
-    
-    // Convert the context back to our manager instance
-    let manager = Unmanaged<SleepPreventionManager>.fromOpaque(context).takeUnretainedValue()
-    
-    // Dispatch to main queue since we're using @MainActor
-    DispatchQueue.main.async {
-        manager.systemStatusDidChange()
     }
 }
