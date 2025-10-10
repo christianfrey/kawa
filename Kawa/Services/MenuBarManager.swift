@@ -77,8 +77,7 @@ final class MenuBarManager: NSObject, ObservableObject {
         let generalPane = SettingsPaneHostingController(
             identifier: "general",
             title: "General",
-            icon: NSImage(systemSymbolName: "gearshape", accessibilityDescription: "General")!,
-            contentSize: NSSize(width: 500, height: 350)
+            icon: NSImage(systemSymbolName: "gearshape", accessibilityDescription: "General")!
         ) {
             GeneralSettingsView()
         }
@@ -86,8 +85,7 @@ final class MenuBarManager: NSObject, ObservableObject {
         let durationPane = SettingsPaneHostingController(
             identifier: "duration",
             title: "Duration",
-            icon: NSImage(systemSymbolName: "clock", accessibilityDescription: "Duration")!,
-            contentSize: NSSize(width: 500, height: 300)
+            icon: NSImage(systemSymbolName: "clock", accessibilityDescription: "Duration")!
         ) {
             DurationSettingsView()
         }
@@ -95,8 +93,7 @@ final class MenuBarManager: NSObject, ObservableObject {
         let batteryPane = SettingsPaneHostingController(
             identifier: "battery",
             title: "Battery",
-            icon: NSImage(systemSymbolName: "battery.75", accessibilityDescription: "Battery")!,
-            contentSize: NSSize(width: 500, height: 250)
+            icon: NSImage(systemSymbolName: "battery.75", accessibilityDescription: "Battery")!
         ) {
             BatterySettingsView()
         }
@@ -104,8 +101,7 @@ final class MenuBarManager: NSObject, ObservableObject {
         let notificationsPane = SettingsPaneHostingController(
             identifier: "notifications",
             title: "Notifications",
-            icon: NSImage(systemSymbolName: "bell.badge", accessibilityDescription: "Notifications")!,
-            contentSize: NSSize(width: 500, height: 300)
+            icon: NSImage(systemSymbolName: "bell.badge", accessibilityDescription: "Notifications")!
         ) {
             NotificationsSettingsView()
         }
@@ -113,8 +109,7 @@ final class MenuBarManager: NSObject, ObservableObject {
         let aboutPane = SettingsPaneHostingController(
             identifier: "about",
             title: "About",
-            icon: NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")!,
-            contentSize: NSSize(width: 500, height: 300)
+            icon: NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")!
         ) {
             AboutSettingsView()
         }

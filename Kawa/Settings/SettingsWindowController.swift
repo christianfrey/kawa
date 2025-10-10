@@ -81,8 +81,7 @@ final class SettingsWindowController: NSWindowController {
         let newView = pane.view
         
         // Calculate the new window frame
-        let contentSize = pane.preferredContentSize != .zero ? pane.preferredContentSize : newView.fittingSize
-        let newWindowFrame = window?.frameRect(forContentRect: NSRect(origin: .zero, size: contentSize)) ?? .zero
+        let newWindowFrame = window?.frameRect(forContentRect: NSRect(origin: .zero, size: newView.fittingSize)) ?? .zero
         var frame = window?.frame ?? .zero
         frame.origin.y += frame.height - newWindowFrame.height
         frame.size = newWindowFrame.size
@@ -179,14 +178,12 @@ final class SettingsPaneHostingController<Content: View>: NSHostingController<Co
     let paneTitle: String
     let toolbarItemIcon: NSImage
     
-    init(identifier: String, title: String, icon: NSImage, contentSize: NSSize = NSSize(width: 480, height: 300), @ViewBuilder content: () -> Content) {
+    init(identifier: String, title: String, icon: NSImage, @ViewBuilder content: () -> Content) {
         self.paneIdentifier = identifier
         self.paneTitle = title
         self.toolbarItemIcon = icon
         
         super.init(rootView: content())
-        
-        self.preferredContentSize = contentSize
     }
     
     required init?(coder: NSCoder) {
