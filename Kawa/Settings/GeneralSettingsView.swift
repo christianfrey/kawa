@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - General Settings View
+// MARK: - General Settings View // TODO: rename to - Content View ?
 
 struct GeneralSettingsView: View {
     
@@ -109,8 +109,9 @@ struct GeneralSettingsView: View {
                 }
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(width: 500, alignment: .center)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 30)
         .onAppear(perform: syncLidSleepState)
     }
     
@@ -127,5 +128,5 @@ struct GeneralSettingsView: View {
 #Preview {
     GeneralSettingsView()
         .padding(20)
-        .frame(width: 600)
+        .frame(width: 500)
 }

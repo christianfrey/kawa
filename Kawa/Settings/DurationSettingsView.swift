@@ -50,7 +50,7 @@ enum DurationUnit: String, CaseIterable, Identifiable {
     var id: Self { self }
 }
 
-// MARK: - Duration Settings View
+// MARK: - Content View
 
 struct DurationSettingsView: View {
     
@@ -122,8 +122,9 @@ struct DurationSettingsView: View {
                 }
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(width: 500, alignment: .top) // .center .leading
+        .padding(.vertical, 20)
+        .padding(.horizontal, 30)
     }
 }
 
@@ -132,5 +133,5 @@ struct DurationSettingsView: View {
 #Preview {
     DurationSettingsView()
         .padding(20)
-        .frame(width: 600)
+        .frame(width: 500)
 }

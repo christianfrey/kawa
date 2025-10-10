@@ -1,8 +1,12 @@
 import SwiftUI
 import UserNotifications
 
+// MARK: - Content View
 struct NotificationsSettingsView: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
+    // @AppStorage("showNotifications") private var showNotifications = true
+    // @AppStorage("notifyOnActivation") private var notifyOnActivation = true
+    // @AppStorage("notifyOnDeactivation") private var notifyOnDeactivation = true
     @State private var authorizationStatus: UNAuthorizationStatus = .notDetermined
 
     var body: some View {
@@ -19,6 +23,11 @@ struct NotificationsSettingsView: View {
                     Text("Turn on to receive notifications when sleep prevention starts or stops.")
                         .font(.caption)
                         .foregroundColor(.secondary)
+
+                    // if showNotifications {
+                    //     Toggle("Notify when activated", isOn: $notifyOnActivation)
+                    //     Toggle("Notify when deactivated", isOn: $notifyOnDeactivation)
+                    // }
                 }
                 Spacer()
             }
@@ -59,8 +68,9 @@ struct NotificationsSettingsView: View {
                 }
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(width: 500, alignment: .center)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 30)
         .onAppear(perform: checkNotificationStatus)
         // Check when app becomes active (user returns from System Settings)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
@@ -92,9 +102,8 @@ struct NotificationsSettingsView: View {
 }
 
 // MARK: - Preview
-
 #Preview {
     NotificationsSettingsView()
         .padding(20)
-        .frame(width: 600)
+        .frame(width: 500)
 }

@@ -46,18 +46,18 @@ final class MenuBarManager: NSObject, ObservableObject {
     
     private var statusItem: NSStatusItem?
     private let sleepManager = SleepPreventionManager.shared
-    private let settingsState: SettingsState
     private var cancellables = Set<AnyCancellable>()
     
     private let remainingTimeMenuItem = NSMenuItem()
     private var remainingTimeValueLabel: NSTextField?
     
     @Published private(set) var quickStartClickMode: QuickStartClickMode = .right
+
+    private lazy var settingsWindowController = makeSettingsController()
     
     // MARK: - Initialization
 
-    init(settingsState: SettingsState) {
-        self.settingsState = settingsState
+    override init() {
         super.init()
         
         loadInitialPreferences()
@@ -71,6 +71,57 @@ final class MenuBarManager: NSObject, ObservableObject {
     private func loadInitialPreferences() {
         quickStartClickMode = UserDefaults.standard.quickStartClickMode
         print("⚙️ Initial click mode: \(quickStartClickMode.displayName)")
+    }
+
+    private func makeSettingsController() -> SettingsWindowController {
+        let generalPane = SettingsPaneHostingController(
+            identifier: "general",
+            title: "General",
+            icon: NSImage(systemSymbolName: "gearshape", accessibilityDescription: "General")!,
+            contentSize: NSSize(width: 500, height: 350)
+        ) {
+            GeneralSettingsView()
+        }
+        
+        let durationPane = SettingsPaneHostingController(
+            identifier: "duration",
+            title: "Duration",
+            icon: NSImage(systemSymbolName: "clock", accessibilityDescription: "Duration")!,
+            contentSize: NSSize(width: 500, height: 300)
+        ) {
+            DurationSettingsView()
+        }
+        
+        let batteryPane = SettingsPaneHostingController(
+            identifier: "battery",
+            title: "Battery",
+            icon: NSImage(systemSymbolName: "battery.75", accessibilityDescription: "Battery")!,
+            contentSize: NSSize(width: 500, height: 250)
+        ) {
+            BatterySettingsView()
+        }
+        
+        let notificationsPane = SettingsPaneHostingController(
+            identifier: "notifications",
+            title: "Notifications",
+            icon: NSImage(systemSymbolName: "bell.badge", accessibilityDescription: "Notifications")!,
+            contentSize: NSSize(width: 500, height: 300)
+        ) {
+            NotificationsSettingsView()
+        }
+        
+        let aboutPane = SettingsPaneHostingController(
+            identifier: "about",
+            title: "About",
+            icon: NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")!,
+            contentSize: NSSize(width: 500, height: 300)
+        ) {
+            AboutSettingsView()
+        }
+        
+        return SettingsWindowController(
+            panes: [generalPane, durationPane, batteryPane, notificationsPane, aboutPane]
+        )
     }
     
     private func setupRemainingTimeItem() {
@@ -274,20 +325,13 @@ final class MenuBarManager: NSObject, ObservableObject {
     }
     
     @objc private func openSettings() {
-        settingsState.selectedTab = .general
-        openSettingsWindow()
+        settingsWindowController.show(pane: "general")
     }
     
     @objc private func openAbout() {
-        settingsState.selectedTab = .about
-        openSettingsWindow()
+        settingsWindowController.show(pane: "about")
     }
-    
-    private func openSettingsWindow() {
-        EnvironmentValues().openSettings()
-        NSApp.activate(ignoringOtherApps: true)
-    }
-    
+
     @objc private func quit() {
         print("👋 Quitting Kawa")
         NSApp.terminate(nil)

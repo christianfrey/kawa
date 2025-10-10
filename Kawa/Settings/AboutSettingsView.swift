@@ -1,9 +1,8 @@
 import SwiftUI
 
-struct AboutView: View {
-    
+// MARK: - Content View
+struct AboutSettingsView: View {
     var body: some View {
-        // About content with app icon, name, version and a short description/link
         VStack(spacing: 12) {
             Image(nsImage: NSApp.applicationIconImage)
                 .resizable()
@@ -27,15 +26,15 @@ struct AboutView: View {
                     .padding(.top, 6)
             }
         }
-        .frame(maxWidth: .infinity)
-        .padding()
+        .frame(width: 500, alignment: .center)
+        .padding(.vertical, 20)
+        .padding(.horizontal, 30)
     }
 }
 
 // MARK: - Preview
-
 #Preview {
-    AboutView()
+    AboutSettingsView()
         .padding(20)
-        .frame(width: 600)
+        .frame(width: 500)
 }
