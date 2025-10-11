@@ -30,11 +30,6 @@ final class SettingsWindowController: NSWindowController {
         super.init(window: window)
         
         setupToolbar()
-        
-        // Show first pane by default
-        if let firstPane = panes.first {
-            showPane(identifier: firstPane.paneIdentifier)
-        }
     }
     
     required init?(coder: NSCoder) {
@@ -47,12 +42,10 @@ final class SettingsWindowController: NSWindowController {
         toolbar.delegate = self
         toolbar.allowsUserCustomization = false
         toolbar.displayMode = .iconAndLabel
-        // toolbar.showsBaselineSeparator = true
         
         self.toolbar = toolbar
         window?.toolbar = toolbar
         
-        // Set default selected item
         if let firstPane = panes.first {
             toolbar.selectedItemIdentifier = NSToolbarItem.Identifier(firstPane.paneIdentifier)
         }
@@ -60,76 +53,96 @@ final class SettingsWindowController: NSWindowController {
     
     // MARK: - Pane Switching
     func showPane(identifier: String) {
-        guard let pane = panes.first(where: { $0.paneIdentifier == identifier }) else {
+        print("showPane called - identifier=\(identifier)")
+        guard let pane = panes.first(where: { $0.paneIdentifier == identifier }),
+            let window = window else {
             return
         }
 
-        // Update window title
-        window?.title = pane.paneTitle
+        // If same pane, skip
+        if currentPaneIdentifier == identifier { return }
         
-        // Update toolbar selection
-        toolbar?.selectedItemIdentifier = NSToolbarItem.Identifier(identifier)
-        
-        // If same pane, do nothing
-        if currentPaneIdentifier == identifier {
-            return
-        }
-        
+        let isFirstDisplay = (currentPaneIdentifier == nil)
         currentPaneIdentifier = identifier
-        
-        // Get the new pane's view
+        print("isFirstDisplay: \(isFirstDisplay)") // TODO: true only the first time, if we close the window and reopen another tab via menu, there is the animation, so bug
+
+        // Update title & toolbar selection
+        window.title = pane.paneTitle
+        toolbar?.selectedItemIdentifier = NSToolbarItem.Identifier(identifier)
+
+        // New view setup
         let newView = pane.view
-        
-        // Calculate the new window frame
-        let newWindowFrame = window?.frameRect(forContentRect: NSRect(origin: .zero, size: newView.fittingSize)) ?? .zero
-        var frame = window?.frame ?? .zero
+        let newContentSize = newView.fittingSize
+        let newWindowFrame = window.frameRect(forContentRect: NSRect(origin: .zero, size: newContentSize))
+
+        // Prepare new window frame
+        var frame = window.frame
         frame.origin.y += frame.height - newWindowFrame.height
         frame.size = newWindowFrame.size
 
-        // Keep track of the current tab view
+        // Ensure correct window size *before* adding the view (for first display)
+        if isFirstDisplay {
+            window.setFrame(frame, display: true)
+            window.layoutIfNeeded()
+        }
+
+        // Content view setup
+        guard let contentView = window.contentView else { return }
+        let oldView = contentView.subviews.first
+        newView.alphaValue = isFirstDisplay ? 1.0 : 0.0
+        newView.autoresizingMask = [.width, .minYMargin]
+
+        // Position view at top (approx toolbar offset)
+        let yOffset: CGFloat = 45
+        let yPosition = contentView.bounds.height - newWindowFrame.height + yOffset
+        newView.frame = NSRect(
+            x: 0,
+            y: yPosition,
+            width: newWindowFrame.width,
+            height: newWindowFrame.height
+        )
+        contentView.addSubview(newView)
+
         self.currentTabView = newView
 
-        // MARK: - Pane Animation
+        // First display: skip animation
+        guard !isFirstDisplay else {
+            oldView?.removeFromSuperview()
+            return
+        }
+
+        // Animate transitions
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.25
+            context.duration = 0.25 // TODO: restore to 0.25
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            
+
             // Animate window resize
-            window?.animator().setFrame(frame, display: true)
-            
-            // Crossfade transition
-            guard let contentView = window?.contentView else { return }
-            let oldView = contentView.subviews.first
-            
-            // Prepare new view
-            newView.alphaValue = 0.0
-            newView.frame = contentView.bounds
-            newView.autoresizingMask = [.width, .height]
-            contentView.addSubview(newView)
+            window.animator().setFrame(frame, display: true)
             
             // Animate fade
             newView.animator().alphaValue = 1.0
             oldView?.animator().alphaValue = 0.0
         }, completionHandler: { [weak self, weak newView] in
             guard
-                let self = self,
-                let contentView = self.window?.contentView,
-                let newView = newView
+                let self,
+                let newView,
+                let contentView = self.window?.contentView
             else { return }
 
-            // Only clean up if this is still the active tab
+            // Keep only the active pane
             guard self.currentTabView === newView else { return }
-
-            // Remove all old views except the current one
             contentView.subviews
                 .filter { $0 != newView }
                 .forEach { $0.removeFromSuperview() }
         })
     }
+
     
     // MARK: - Show Window
     func show(pane identifier: String? = nil) {
+        print("show called - identifier=\(String(describing: identifier))")
         if let identifier = identifier {
+            print("showPane will be called - identifier \(identifier)")
             showPane(identifier: identifier)
         }
         
