@@ -35,6 +35,5 @@ struct AboutSettingsView: View {
 // MARK: - Preview
 #Preview {
     AboutSettingsView()
-        .padding(20)
         .frame(width: 500)
 }

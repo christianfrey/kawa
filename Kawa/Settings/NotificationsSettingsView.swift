@@ -105,6 +105,5 @@ struct NotificationsSettingsView: View {
 // MARK: - Preview
 #Preview {
     NotificationsSettingsView()
-        .padding(20)
         .frame(width: 500)
 }
