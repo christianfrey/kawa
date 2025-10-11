@@ -109,7 +109,6 @@ struct GeneralSettingsView: View {
                 }
             }
         }
-        .frame(width: 500, alignment: .center)
         .padding(.vertical, 20)
         .padding(.horizontal, 30)
         .onAppear(perform: syncLidSleepState)

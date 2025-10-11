@@ -37,9 +37,8 @@ struct BatterySettingsView: View {
                     .disabled(!deactivateOnLowBattery)
             }
         }
-        .frame(width: 500, alignment: .center)
         .padding(.vertical, 20)
-        .padding(.horizontal, 30)
+        .padding(.horizontal, 100)
     }
 }
 

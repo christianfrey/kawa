@@ -9,12 +9,12 @@ protocol SettingsPane: NSViewController {
 
 // MARK: - Settings Window Controller
 final class SettingsWindowController: NSWindowController {
-    private let panes: [SettingsPane]
+    private let panes: [any SettingsPane]
     private var toolbar: NSToolbar?
     private var currentPaneIdentifier: String?
     private weak var currentTabView: NSView?
     
-    init(panes: [SettingsPane]) {
+    init(panes: [any SettingsPane]) {
         self.panes = panes
         
         let window = NSWindow(

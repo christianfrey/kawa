@@ -122,7 +122,6 @@ struct DurationSettingsView: View {
                 }
             }
         }
-        .frame(width: 500, alignment: .top) // .center .leading
         .padding(.vertical, 20)
         .padding(.horizontal, 30)
     }

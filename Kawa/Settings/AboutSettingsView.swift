@@ -26,7 +26,7 @@ struct AboutSettingsView: View {
                     .padding(.top, 6)
             }
         }
-        .frame(width: 500, alignment: .center)
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
         .padding(.horizontal, 30)
     }

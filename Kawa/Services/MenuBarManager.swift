@@ -74,50 +74,61 @@ final class MenuBarManager: NSObject, ObservableObject {
     }
 
     private func makeSettingsController() -> SettingsWindowController {
-        let generalPane = SettingsPaneHostingController(
-            identifier: "general",
-            title: "General",
-            icon: NSImage(systemSymbolName: "gearshape", accessibilityDescription: "General")!
-        ) {
-            GeneralSettingsView()
-        }
+        let panes: [any SettingsPane] = [
+            createSettingsPane(
+                identifier: "general",
+                title: "General",
+                icon: NSImage(systemSymbolName: "gearshape", accessibilityDescription: "General")!,
+                content: { GeneralSettingsView() }
+            ),
+            createSettingsPane(
+                identifier: "duration",
+                title: "Duration",
+                icon: NSImage(systemSymbolName: "clock", accessibilityDescription: "Duration")!,
+                content: { DurationSettingsView() }
+            ),
+            createSettingsPane(
+                identifier: "battery",
+                title: "Battery",
+                icon: NSImage(systemSymbolName: "battery.75", accessibilityDescription: "Battery")!,
+                content: { BatterySettingsView() }
+            ),
+            createSettingsPane(
+                identifier: "notifications",
+                title: "Notifications",
+                icon: NSImage(systemSymbolName: "bell.badge", accessibilityDescription: "Notifications")!,
+                content: { NotificationsSettingsView() }
+            ),
+            createSettingsPane(
+                identifier: "about",
+                title: "About",
+                icon: NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")!,
+                content: { AboutSettingsView() }
+            )
+        ]
         
-        let durationPane = SettingsPaneHostingController(
-            identifier: "duration",
-            title: "Duration",
-            icon: NSImage(systemSymbolName: "clock", accessibilityDescription: "Duration")!
-        ) {
-            DurationSettingsView()
-        }
-        
-        let batteryPane = SettingsPaneHostingController(
-            identifier: "battery",
-            title: "Battery",
-            icon: NSImage(systemSymbolName: "battery.75", accessibilityDescription: "Battery")!
-        ) {
-            BatterySettingsView()
-        }
-        
-        let notificationsPane = SettingsPaneHostingController(
-            identifier: "notifications",
-            title: "Notifications",
-            icon: NSImage(systemSymbolName: "bell.badge", accessibilityDescription: "Notifications")!
-        ) {
-            NotificationsSettingsView()
-        }
-        
-        let aboutPane = SettingsPaneHostingController(
-            identifier: "about",
-            title: "About",
-            icon: NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")!
-        ) {
-            AboutSettingsView()
-        }
-        
-        return SettingsWindowController(
-            panes: [generalPane, durationPane, batteryPane, notificationsPane, aboutPane]
-        )
+        return SettingsWindowController(panes: panes)
     }
+
+    private func createSettingsPane<V: View>(
+        identifier: String,
+        title: String,
+        icon: NSImage,
+        @ViewBuilder content: () -> V
+    ) -> any SettingsPane {
+        let view = content()
+            .frame(width: 500, alignment: .topLeading)
+        
+        let hostingController = SettingsPaneHostingController(
+            identifier: identifier,
+            title: title,
+            icon: icon,
+            content: { view }
+        )
+        
+        return hostingController
+    }
+
     
     private func setupRemainingTimeItem() {
         enum Constants {
