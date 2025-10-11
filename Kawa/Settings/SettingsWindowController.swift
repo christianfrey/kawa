@@ -59,66 +59,66 @@ final class SettingsWindowController: NSWindowController {
             return
         }
 
-        // If same pane, skip
+        // Skip if same pane
         if currentPaneIdentifier == identifier { return }
-        
-        let isFirstDisplay = (currentPaneIdentifier == nil)
-        currentPaneIdentifier = identifier
-        print("isFirstDisplay: \(isFirstDisplay)") // TODO: true only the first time, if we close the window and reopen another tab via menu, there is the animation, so bug
 
-        // Update title & toolbar selection
+        currentPaneIdentifier = identifier
+
+        // Determine if this is the first display
+        let isFirstDisplay = !window.isVisible
+
+        // Update title & toolbar
         window.title = pane.paneTitle
         toolbar?.selectedItemIdentifier = NSToolbarItem.Identifier(identifier)
 
         // New view setup
         let newView = pane.view
-        let newContentSize = newView.fittingSize
-        let newWindowFrame = window.frameRect(forContentRect: NSRect(origin: .zero, size: newContentSize))
+        let newSize = newView.fittingSize
+        let newFrame = window.frameRect(forContentRect: NSRect(origin: .zero, size: newSize))
 
-        // Prepare new window frame
+        // Prepare window frame
         var frame = window.frame
-        frame.origin.y += frame.height - newWindowFrame.height
-        frame.size = newWindowFrame.size
+        frame.origin.y += frame.height - newFrame.height
+        frame.size = newFrame.size
 
-        // Ensure correct window size *before* adding the view (for first display)
+        // Apply size immediately if first display
         if isFirstDisplay {
             window.setFrame(frame, display: true)
             window.layoutIfNeeded()
         }
 
-        // Content view setup
         guard let contentView = window.contentView else { return }
         let oldView = contentView.subviews.first
+
+        // Prepare new view
         newView.alphaValue = isFirstDisplay ? 1.0 : 0.0
         newView.autoresizingMask = [.width, .minYMargin]
 
         // Position view at top (approx toolbar offset)
         let yOffset: CGFloat = 45
-        let yPosition = contentView.bounds.height - newWindowFrame.height + yOffset
         newView.frame = NSRect(
             x: 0,
-            y: yPosition,
-            width: newWindowFrame.width,
-            height: newWindowFrame.height
+            y: contentView.bounds.height - newFrame.height + yOffset,
+            width: newFrame.width,
+            height: newFrame.height
         )
         contentView.addSubview(newView)
+        currentTabView = newView
 
-        self.currentTabView = newView
-
-        // First display: skip animation
+        // Skip animation if first display
         guard !isFirstDisplay else {
             oldView?.removeFromSuperview()
             return
         }
 
-        // Animate transitions
+        // Animate transition
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.25 // TODO: restore to 0.25
+            context.duration = 0.25
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
             // Animate window resize
             window.animator().setFrame(frame, display: true)
-            
+
             // Animate fade
             newView.animator().alphaValue = 1.0
             oldView?.animator().alphaValue = 0.0
@@ -136,7 +136,6 @@ final class SettingsWindowController: NSWindowController {
                 .forEach { $0.removeFromSuperview() }
         })
     }
-
     
     // MARK: - Show Window
     func show(pane identifier: String? = nil) {
