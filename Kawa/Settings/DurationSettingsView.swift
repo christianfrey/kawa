@@ -131,5 +131,5 @@ struct DurationSettingsView: View {
 
 #Preview {
     DurationSettingsView()
-        .frame(width: 500)
+        .frame(width: 6)
 }

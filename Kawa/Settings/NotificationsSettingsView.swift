@@ -105,5 +105,5 @@ struct NotificationsSettingsView: View {
 // MARK: - Preview
 #Preview {
     NotificationsSettingsView()
-        .frame(width: 500)
+        .frame(width: 600)
 }

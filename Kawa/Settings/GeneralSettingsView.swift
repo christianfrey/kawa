@@ -126,5 +126,5 @@ struct GeneralSettingsView: View {
 
 #Preview {
     GeneralSettingsView()
-        .frame(width: 500)
+        .frame(width: 600)
 }

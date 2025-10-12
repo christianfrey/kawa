@@ -45,5 +45,5 @@ struct BatterySettingsView: View {
 // MARK: - Preview
 #Preview {
     BatterySettingsView()
-        .frame(width: 500)
+        .frame(width: 600)
 }

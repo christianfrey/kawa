@@ -117,7 +117,7 @@ final class MenuBarManager: NSObject, ObservableObject {
         @ViewBuilder content: () -> V
     ) -> any SettingsPane {
         let view = content()
-            .frame(width: 500, alignment: .topLeading)
+            .frame(width: 600, alignment: .topLeading)
         
         let hostingController = SettingsPaneHostingController(
             identifier: identifier,
