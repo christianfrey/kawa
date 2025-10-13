@@ -40,7 +40,6 @@ struct GeneralSettingsView: View {
             get: { preventLidSleep },
             set: { newValue in
                 preventLidSleep = newValue
-                ClosedDisplayManager.setEnabled(newValue)
             }
         )
     }
@@ -71,7 +70,7 @@ struct GeneralSettingsView: View {
                     Toggle("Allow display sleep", isOn: $allowDisplaySleep)
                         .help("Lets the display sleep even when Kawa is active.")
                     
-                    Toggle("Prevent sleep when display is closed", isOn: isLidSleepPrevented)
+                    Toggle("Prevent sleep when display is closed", isOn: $preventLidSleep)
                         .help("Keeps your Mac awake even with the lid closed (laptops only)")
                     
                     Toggle("End session on manual sleep", isOn: $endSessionOnManualSleep)
@@ -109,16 +108,11 @@ struct GeneralSettingsView: View {
                 }
             }
         }
+        .onChange(of: preventLidSleep) { oldValue, newValue in
+            ClosedDisplayManager.setEnabled(newValue)
+        }
         .padding(.vertical, 20)
         .padding(.horizontal, 30)
-        .onAppear(perform: syncLidSleepState)
-    }
-    
-    // MARK: - Methods
-    
-    private func syncLidSleepState() {
-        // Sync the closed display state on appear
-        ClosedDisplayManager.setEnabled(preventLidSleep)
     }
 }
 
