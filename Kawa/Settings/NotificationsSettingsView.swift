@@ -14,7 +14,7 @@ struct NotificationsSettingsView: View {
             // Notification Toggle
             HStack(alignment: .top, spacing: 12) {
                 Text("Notifications:")
-                    .frame(width: 180, alignment: .trailing)
+                    .frame(width: 200, alignment: .trailing)
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Toggle("Enable notifications", isOn: $notificationsEnabled)
@@ -39,7 +39,7 @@ struct NotificationsSettingsView: View {
             // System Permissions
             HStack(alignment: .top, spacing: 12) {
                 Text("System Permissions:")
-                    .frame(width: 180, alignment: .trailing)
+                    .frame(width: 200, alignment: .trailing)
 
                 VStack(alignment: .leading, spacing: 8) {
                     switch authorizationStatus {

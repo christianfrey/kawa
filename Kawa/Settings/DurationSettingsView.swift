@@ -71,7 +71,7 @@ struct DurationSettingsView: View {
             // Default Duration
             HStack(alignment: .top, spacing: 12) {
                 Text("Default Session Duration:")
-                    .frame(width: 180, alignment: .trailing)
+                    .frame(width: 200, alignment: .trailing)
                 
                 VStack(alignment: .leading, spacing: 6) {
                     Picker("", selection: $defaultDuration) {
@@ -98,7 +98,7 @@ struct DurationSettingsView: View {
             // Custom Duration
             HStack(alignment: .top, spacing: 12) {
                 Text("Custom Duration:")
-                    .frame(width: 180, alignment: .trailing)
+                    .frame(width: 200, alignment: .trailing)
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Toggle("Enable Custom Duration", isOn: $isCustomDurationEnabled)
