@@ -6,39 +6,26 @@ struct BatterySettingsView: View {
     @AppStorage("batteryThreshold") private var batteryThreshold: Double = 50.0
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // Checkbox for enabling/disabling the feature
-            Toggle(isOn: $deactivateOnLowBattery) {
-                Text("Deactivate prevention when battery level below:")
-                    .font(.system(size: 13))
-            }
-            .toggleStyle(.checkbox)
-            
-            // Slider for battery threshold
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("10%")
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    Text("\(Int(batteryThreshold))%")
-                        .font(.system(size: 13, weight: .medium))
-                    
-                    Spacer()
-                    
-                    Text("90%")
-                        .font(.system(size: 11))
-                        .foregroundColor(.secondary)
-                }
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 12) {
+                Text("Low Power Mode:")
+                    .frame(width: 200, alignment: .trailing)
                 
-                Slider(value: $batteryThreshold, in: 10...90, step: 5)
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("Deactivate when battery is low", isOn: $deactivateOnLowBattery)
+                    
+                    HStack {
+                        Slider(value: $batteryThreshold, in: 10...90, step: 5)
+                        Text("\(Int(batteryThreshold))%")
+                            .frame(width: 40, alignment: .trailing)
+                    }
                     .disabled(!deactivateOnLowBattery)
+                    .foregroundColor(deactivateOnLowBattery ? .primary : .secondary)
+                }
             }
         }
         .padding(.vertical, 20)
-        .padding(.horizontal, 100)
+        .padding(.horizontal, 30)
     }
 }
 
