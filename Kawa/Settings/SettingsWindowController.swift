@@ -94,13 +94,12 @@ final class SettingsWindowController: NSWindowController {
         newView.alphaValue = isFirstDisplay ? 1.0 : 0.0
         newView.autoresizingMask = [.width, .minYMargin]
 
-        // Position view at top (approx toolbar offset)
-        let yOffset: CGFloat = 45
+        // Position view at the top
         newView.frame = NSRect(
             x: 0,
-            y: contentView.bounds.height - newFrame.height + yOffset,
+            y: contentView.bounds.height - newSize.height,
             width: newFrame.width,
-            height: newFrame.height
+            height: newSize.height
         )
         contentView.addSubview(newView)
         currentTabView = newView
