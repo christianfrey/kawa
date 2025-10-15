@@ -1,0 +1,14 @@
+disabled_rules:
+  - todo
+  - unused_closure_parameter
+  - identifier_name
+  - line_length
+  - trailing_whitespace
+  - function_body_length
+
+custom_rules:
+  mark_blank_line_after:
+    name: "MARK Blank Line After"
+    regex: "// MARK:.*\\n(?!\\n)"
+    message: "Add a blank line after // MARK: section header"
+    severity: warning
