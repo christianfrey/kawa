@@ -129,7 +129,6 @@ final class MenuBarManager: NSObject, ObservableObject {
         return hostingController
     }
 
-    
     private func setupRemainingTimeItem() {
         enum Constants {
             static let viewWidth: CGFloat = 200.0
