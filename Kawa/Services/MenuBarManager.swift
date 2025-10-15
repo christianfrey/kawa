@@ -179,7 +179,7 @@ final class MenuBarManager: NSObject, ObservableObject {
 
             stackView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: Constants.horizontalPadding),
             stackView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -Constants.horizontalPadding),
-            stackView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            stackView.centerYAnchor.constraint(equalTo: container.centerYAnchor)
         ])
     }
 
