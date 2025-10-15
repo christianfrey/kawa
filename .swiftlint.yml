@@ -7,8 +7,8 @@ disabled_rules:
   - function_body_length
 
 custom_rules:
-  mark_blank_line_after:
-    name: "MARK Blank Line After"
-    regex: "// MARK:.*\\n(?!\\n)"
-    message: "Add a blank line after // MARK: section header"
+  mark_spacing:
+    name: "MARK Surrounded by Blank Lines"
+    regex: '// MARK:[^\n]*(\n)(?!\n)|[^\s{]\n[^\n\/]*// MARK:'
+    message: "Ensure MARK comments are surrounded by a single blank line before and after"
     severity: warning
