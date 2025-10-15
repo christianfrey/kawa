@@ -20,7 +20,6 @@ struct AboutSettingsView: View {
             .font(.subheadline)
             .foregroundColor(.secondary)
 
-
             Text("Keep your Mac awake with style.")
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
