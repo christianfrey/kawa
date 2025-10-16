@@ -9,7 +9,7 @@ class SleepPreventionManager: ObservableObject {
     static let shared = SleepPreventionManager()
 
     // MARK: - Published Properties
-    
+
     @Published var isPreventingSleep: Bool = false {
         didSet {
             updateSleepPrevention()
@@ -87,13 +87,13 @@ class SleepPreventionManager: ObservableObject {
     }
     
     // MARK: - Public Methods
-    
+
     func toggle() {
         isPreventingSleep.toggle()
     }
     
     // MARK: - Battery Check
-    
+
     private func handleBatteryStatusChange() {
         // If prevention is active and battery is now too low, disable it
         if isPreventingSleep && batteryMonitor.shouldDeactivatePrevention() {

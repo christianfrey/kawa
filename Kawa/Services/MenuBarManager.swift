@@ -43,7 +43,7 @@ extension UserDefaults {
 final class MenuBarManager: NSObject, ObservableObject {
     
     // MARK: - Properties
-    
+
     private var statusItem: NSStatusItem?
     private let sleepManager = SleepPreventionManager.shared
     private var cancellables = Set<AnyCancellable>()
@@ -258,6 +258,7 @@ final class MenuBarManager: NSObject, ObservableObject {
     }
     
     // MARK: - Click Handler
+
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
         guard let event = NSApp.currentEvent else { return }
         
@@ -284,7 +285,7 @@ final class MenuBarManager: NSObject, ObservableObject {
     }
     
     // MARK: - Menu Building
-    
+
     private func showMenu() {
         let menu = NSMenu()
         
@@ -325,6 +326,7 @@ final class MenuBarManager: NSObject, ObservableObject {
     }
     
     // MARK: - Menu Actions
+
     @objc private func toggleCaffeinate() {
         sleepManager.toggle()
     }

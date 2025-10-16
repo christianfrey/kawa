@@ -22,7 +22,7 @@ class BatteryMonitor: ObservableObject {
     }
     
     // MARK: - Public Methods
-    
+
     func updateBatteryStatus() {
         let powerInfo = IOPSCopyPowerSourcesInfo().takeRetainedValue()
         let sources = IOPSCopyPowerSourcesList(powerInfo).takeRetainedValue() as [CFTypeRef]
@@ -61,7 +61,7 @@ class BatteryMonitor: ObservableObject {
     }
     
     // MARK: - Private Methods
-    
+
     private func setupPowerSourceNotification() {
         let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
         powerSourceRunLoopSource = IOPSNotificationCreateRunLoopSource(batteryMonitorCallback, context)?.takeRetainedValue()
@@ -78,6 +78,7 @@ class BatteryMonitor: ObservableObject {
 }
 
 // MARK: - C Callback Function
+
 private func batteryMonitorCallback(context: UnsafeMutableRawPointer?) {
     guard let context = context else { return }
     

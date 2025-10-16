@@ -2,6 +2,7 @@ import SwiftUI
 import UserNotifications
 
 // MARK: - Content View
+
 struct NotificationsSettingsView: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
     // @AppStorage("showNotifications") private var showNotifications = true
@@ -103,6 +104,7 @@ struct NotificationsSettingsView: View {
 }
 
 // MARK: - Preview
+
 #Preview {
     NotificationsSettingsView()
         .frame(width: 600)

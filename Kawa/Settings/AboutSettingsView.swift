@@ -1,6 +1,7 @@
 import SwiftUI
 
 // MARK: - Content View
+
 struct AboutSettingsView: View {
     var body: some View {
         VStack(spacing: 10) {
@@ -41,6 +42,7 @@ struct AboutSettingsView: View {
 }
 
 // MARK: - Preview
+
 #Preview {
     AboutSettingsView()
         .frame(width: 600)

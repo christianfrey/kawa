@@ -1,6 +1,7 @@
 import SwiftUI
 
 // MARK: - Content View
+
 struct BatterySettingsView: View {
     @AppStorage("deactivateOnLowBattery") private var deactivateOnLowBattery = false
     @AppStorage("batteryThreshold") private var batteryThreshold: Double = 50.0
@@ -30,6 +31,7 @@ struct BatterySettingsView: View {
 }
 
 // MARK: - Preview
+
 #Preview {
     BatterySettingsView()
         .frame(width: 600)

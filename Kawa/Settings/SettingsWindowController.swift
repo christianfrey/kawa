@@ -1,6 +1,7 @@
 import SwiftUI
 
 // MARK: - Settings Pane Protocol
+
 protocol SettingsPane: NSViewController {
     var paneIdentifier: String { get }
     var paneTitle: String { get }
@@ -8,6 +9,7 @@ protocol SettingsPane: NSViewController {
 }
 
 // MARK: - Settings Window Controller
+
 final class SettingsWindowController: NSWindowController {
     private let panes: [any SettingsPane]
     private var toolbar: NSToolbar?
@@ -37,6 +39,7 @@ final class SettingsWindowController: NSWindowController {
     }
     
     // MARK: - Toolbar Setup
+
     private func setupToolbar() {
         let toolbar = NSToolbar(identifier: NSToolbar.Identifier("SettingsToolbar"))
         toolbar.delegate = self
@@ -52,6 +55,7 @@ final class SettingsWindowController: NSWindowController {
     }
     
     // MARK: - Pane Switching
+
     func showPane(identifier: String) {
         print("showPane called - identifier=\(identifier)")
         guard let pane = panes.first(where: { $0.paneIdentifier == identifier }),
@@ -137,6 +141,7 @@ final class SettingsWindowController: NSWindowController {
     }
     
     // MARK: - Show Window
+
     func show(pane identifier: String? = nil) {
         print("show called - identifier=\(String(describing: identifier))")
         if let identifier = identifier {
@@ -151,6 +156,7 @@ final class SettingsWindowController: NSWindowController {
 }
 
 // MARK: - Toolbar Delegate
+
 extension SettingsWindowController: NSToolbarDelegate {
     func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
         guard let pane = panes.first(where: { $0.paneIdentifier == itemIdentifier.rawValue }) else {
@@ -184,6 +190,7 @@ extension SettingsWindowController: NSToolbarDelegate {
 }
 
 // MARK: - SwiftUI Hosting Controller for Settings Pane
+
 final class SettingsPaneHostingController<Content: View>: NSHostingController<Content>, SettingsPane {
     let paneIdentifier: String
     let paneTitle: String

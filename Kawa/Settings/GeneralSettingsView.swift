@@ -5,7 +5,7 @@ import SwiftUI
 struct GeneralSettingsView: View {
     
     // MARK: - Properties
-    
+
     @StateObject private var loginItemManager = LoginItemManager.shared
     
     @AppStorage("startSessionOnLaunch")
@@ -27,7 +27,7 @@ struct GeneralSettingsView: View {
     private var quickStartClickModeRaw: String = QuickStartClickMode.right.rawValue
     
     // MARK: - Computed Properties
-    
+
     private var isLaunchAtLoginEnabled: Binding<Bool> {
         Binding(
             get: { loginItemManager.isEnabled },
@@ -52,7 +52,7 @@ struct GeneralSettingsView: View {
     }
     
     // MARK: - Body
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // General toggles
