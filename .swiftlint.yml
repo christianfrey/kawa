@@ -6,6 +6,11 @@ disabled_rules:
   - trailing_whitespace
   - function_body_length
   - trailing_comma
+  - opening_brace # swiftformat will handle this
+
+type_body_length:
+  - 300 # warning
+  - 400 # error
 
 custom_rules:
   mark_spacing:
