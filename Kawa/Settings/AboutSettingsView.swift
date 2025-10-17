@@ -27,11 +27,14 @@ struct AboutSettingsView: View {
                 .padding(.top, 4)
 
             if let url = URL(string: "https://github.com/christianfrey/kawa") {
-                Button(action: {
-                    NSWorkspace.shared.open(url)
-                }, label: {
-                    Text("GitHub Repository")
-                })
+                Button(
+                    action: {
+                        NSWorkspace.shared.open(url)
+                    },
+                    label: {
+                        Text("GitHub Repository")
+                    }
+                )
                 .padding(.top, 8)
             }
         }

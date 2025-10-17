@@ -1,13 +1,13 @@
-import SwiftUI
-import AppKit // MenuBarExtra does not support right-click handling, so use NSStatusBar
+import AppKit  // MenuBarExtra does not support right-click handling, so use NSStatusBar
 import Combine
+import SwiftUI
 
 // MARK: - Quick Start Click Mode
 
 enum QuickStartClickMode: String, CaseIterable {
     case left = "left"
     case right = "right"
-    
+
     var displayName: String {
         switch self {
         case .left: return "Left Click"
@@ -22,12 +22,13 @@ extension UserDefaults {
     private enum Keys {
         static let quickStartClickMode = "quickStartClickMode"
     }
-    
+
     var quickStartClickMode: QuickStartClickMode {
         get {
             guard let value = string(forKey: Keys.quickStartClickMode),
-                  let mode = QuickStartClickMode(rawValue: value) else {
-                return .right // Default mode
+                let mode = QuickStartClickMode(rawValue: value)
+            else {
+                return .right  // Default mode
             }
             return mode
         }
@@ -41,31 +42,31 @@ extension UserDefaults {
 
 @MainActor
 final class MenuBarManager: NSObject, ObservableObject {
-    
+
     // MARK: - Properties
 
     private var statusItem: NSStatusItem?
     private let sleepManager = SleepPreventionManager.shared
     private var cancellables = Set<AnyCancellable>()
-    
+
     private let remainingTimeMenuItem = NSMenuItem()
     private var remainingTimeValueLabel: NSTextField?
-    
+
     @Published private(set) var quickStartClickMode: QuickStartClickMode = .right
 
     private lazy var settingsWindowController = makeSettingsController()
-    
+
     // MARK: - Initialization
 
     override init() {
         super.init()
-        
+
         loadInitialPreferences()
         setupRemainingTimeItem()
         setupMenuBarItem()
         setupObservers()
     }
-    
+
     // MARK: - Setup
 
     private func loadInitialPreferences() {
@@ -104,9 +105,9 @@ final class MenuBarManager: NSObject, ObservableObject {
                 title: "About",
                 icon: NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")!,
                 content: { AboutSettingsView() }
-            )
+            ),
         ]
-        
+
         return SettingsWindowController(panes: panes)
     }
 
@@ -118,14 +119,14 @@ final class MenuBarManager: NSObject, ObservableObject {
     ) -> any SettingsPane {
         let view = content()
             .frame(width: 600, alignment: .topLeading)
-        
+
         let hostingController = SettingsPaneHostingController(
             identifier: identifier,
             title: title,
             icon: icon,
             content: { view }
         )
-        
+
         return hostingController
     }
 
@@ -179,26 +180,26 @@ final class MenuBarManager: NSObject, ObservableObject {
 
             stackView.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: Constants.horizontalPadding),
             stackView.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -Constants.horizontalPadding),
-            stackView.centerYAnchor.constraint(equalTo: container.centerYAnchor)
+            stackView.centerYAnchor.constraint(equalTo: container.centerYAnchor),
         ])
     }
 
     private func setupMenuBarItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         guard let button = statusItem?.button else { return }
-        
+
         updateIcon()
         button.action = #selector(statusItemClicked(_:))
         button.target = self
         button.sendAction(on: [.leftMouseUp, .rightMouseUp])
     }
-    
+
     private func setupObservers() {
         observeSleepStateChanges()
         observeUserDefaultsChanges()
         observeRemainingTimeChanges()
     }
-    
+
     private func observeSleepStateChanges() {
         sleepManager.$isPreventingSleep
             .receive(on: DispatchQueue.main)
@@ -207,7 +208,7 @@ final class MenuBarManager: NSObject, ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
     private func observeUserDefaultsChanges() {
         NotificationCenter.default
             .publisher(for: UserDefaults.didChangeNotification)
@@ -219,7 +220,7 @@ final class MenuBarManager: NSObject, ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
     private func observeRemainingTimeChanges() {
         sleepManager.$remainingTimeFormatted
             .receive(on: DispatchQueue.main)
@@ -228,42 +229,42 @@ final class MenuBarManager: NSObject, ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
     // MARK: - Update Methods
 
     private func updateIcon() {
         guard let button = statusItem?.button else { return }
-        
+
         let iconName = sleepManager.isPreventingSleep ? "CoffeeCupHot" : "CoffeeBean"
-        
+
         guard let image = NSImage(named: iconName) else { return }
         image.isTemplate = true
         button.image = image
     }
-    
+
     private func handleClickModeChange(_ newMode: QuickStartClickMode) {
         guard quickStartClickMode != newMode else { return }
-        
+
         quickStartClickMode = newMode
         print("⚙️ Click mode changed to: \(newMode.displayName)")
     }
-    
+
     private func updateRemainingTimeMenuItem(with remainingTime: String) {
         let shouldShow = !remainingTime.isEmpty && sleepManager.isPreventingSleep
         remainingTimeMenuItem.isHidden = !shouldShow
-        
+
         if shouldShow {
             remainingTimeValueLabel?.stringValue = remainingTime
         }
     }
-    
+
     // MARK: - Click Handler
 
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
         guard let event = NSApp.currentEvent else { return }
-        
+
         let isQuickAction = isQuickActionEvent(event)
-        
+
         if isQuickAction {
             print("🖱️ Quick action triggered → toggle Kawa")
             sleepManager.toggle()
@@ -272,7 +273,7 @@ final class MenuBarManager: NSObject, ObservableObject {
             showMenu()
         }
     }
-    
+
     private func isQuickActionEvent(_ event: NSEvent) -> Bool {
         switch event.type {
         case .leftMouseUp:
@@ -283,58 +284,58 @@ final class MenuBarManager: NSObject, ObservableObject {
             return false
         }
     }
-    
+
     // MARK: - Menu Building
 
     private func showMenu() {
         let menu = NSMenu()
-        
+
         // Remaining time block
         if !remainingTimeMenuItem.isHidden {
             menu.addItem(remainingTimeMenuItem)
             menu.addItem(NSMenuItem.separator())
         }
-        
+
         // Toggle
         let toggleTitle = sleepManager.isPreventingSleep ? "Deactivate Kawa" : "Activate Kawa"
         let toggleItem = NSMenuItem(title: toggleTitle, action: #selector(toggleCaffeinate), keyEquivalent: "")
         toggleItem.target = self
         menu.addItem(toggleItem)
-        
+
         menu.addItem(NSMenuItem.separator())
-        
+
         // About
         let aboutItem = NSMenuItem(title: "About Kawa", action: #selector(openAbout), keyEquivalent: "")
         aboutItem.target = self
         menu.addItem(aboutItem)
-        
+
         // Settings
         let settingsItem = NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)
-        
+
         menu.addItem(NSMenuItem.separator())
-        
+
         // Quit
         let quitItem = NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
-        
+
         statusItem?.menu = menu
         statusItem?.button?.performClick(nil)
         statusItem?.menu = nil
     }
-    
+
     // MARK: - Menu Actions
 
     @objc private func toggleCaffeinate() {
         sleepManager.toggle()
     }
-    
+
     @objc private func openSettings() {
         settingsWindowController.show(pane: "general")
     }
-    
+
     @objc private func openAbout() {
         settingsWindowController.show(pane: "about")
     }

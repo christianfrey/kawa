@@ -53,16 +53,16 @@ enum DurationUnit: String, CaseIterable, Identifiable {
 // MARK: - Content View
 
 struct DurationSettingsView: View {
-    
+
     @AppStorage("defaultDuration")
     private var defaultDuration: DefaultDuration.RawValue = DefaultDuration.indefinitely.rawValue
-    
+
     @AppStorage("isCustomDurationEnabled")
     private var isCustomDurationEnabled: Bool = false
-    
+
     @AppStorage("customDurationValue")
     private var customDurationValue: Int = 30
-    
+
     @AppStorage("customDurationUnit")
     private var customDurationUnit: DurationUnit = .minutes
 
@@ -72,7 +72,7 @@ struct DurationSettingsView: View {
             HStack(alignment: .top, spacing: 12) {
                 Text("Default Session Duration:")
                     .frame(width: 200, alignment: .trailing)
-                
+
                 VStack(alignment: .leading, spacing: 6) {
                     Picker("", selection: $defaultDuration) {
                         ForEach(DefaultDuration.allCases) { duration in
@@ -84,31 +84,31 @@ struct DurationSettingsView: View {
                     .fixedSize()
                     .help("Set a default duration for a Kawa session.")
                     .disabled(isCustomDurationEnabled)
-                    
+
                     Text("The session will automatically end after the selected duration.")
                         .font(.caption)
                         .foregroundColor(isCustomDurationEnabled ? .gray : .secondary)
                 }
-                
+
                 Spacer()
             }
-            
+
             Divider().padding(.vertical, 4)
-            
+
             // Custom Duration
             HStack(alignment: .top, spacing: 12) {
                 Text("Custom Duration:")
                     .frame(width: 200, alignment: .trailing)
-                
+
                 VStack(alignment: .leading, spacing: 8) {
                     Toggle("Enable Custom Duration", isOn: $isCustomDurationEnabled)
                         .help("Override the default duration with a custom value.")
-                    
+
                     HStack {
                         TextField("Value", value: $customDurationValue, formatter: NumberFormatter())
                             .frame(width: 50)
                             .multilineTextAlignment(.trailing)
-                        
+
                         Picker("Unit", selection: $customDurationUnit) {
                             Text("minutes").tag(DurationUnit.minutes)
                             Text("hours").tag(DurationUnit.hours)

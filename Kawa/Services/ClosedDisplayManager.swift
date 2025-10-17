@@ -9,10 +9,10 @@ enum ClosedDisplayManager {
     @discardableResult
     static func setEnabled(_ enabled: Bool) -> Bool {
         print("➡️ setClosedDisplayModeEnabled(\(enabled)) called")
-        
+
         // Match the IOPMrootDomain service
         guard let matching = IOServiceMatching("IOPMrootDomain") else { return false }
-        
+
         // Get the first matching service
         let service = IOServiceGetMatchingService(kIOMainPortDefault, matching)
         guard service != 0 else { return false }

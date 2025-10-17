@@ -16,7 +16,7 @@ struct NotificationsSettingsView: View {
             HStack(alignment: .top, spacing: 12) {
                 Text("Notifications:")
                     .frame(width: 200, alignment: .trailing)
-                
+
                 VStack(alignment: .leading, spacing: 8) {
                     Toggle("Enable notifications", isOn: $notificationsEnabled)
                         .disabled(authorizationStatus == .denied)
@@ -24,8 +24,8 @@ struct NotificationsSettingsView: View {
                     Text("Turn on to receive notifications when sleep prevention starts or stops.")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                        // .background(Color.red.opacity(0.3))
-                        // .fixedSize(horizontal: false, vertical: true) // prevent flicker during animation
+                    // .background(Color.red.opacity(0.3))
+                    // .fixedSize(horizontal: false, vertical: true) // prevent flicker during animation
 
                     // if showNotifications {
                     //     Toggle("Notify when activated", isOn: $notifyOnActivation)

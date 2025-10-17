@@ -1,8 +1,8 @@
+import AppKit
+import Combine
 import Foundation
 import IOKit.pwr_mgt
-import AppKit
 import UserNotifications
-import Combine
 
 @MainActor
 class SleepPreventionManager: ObservableObject {
@@ -18,7 +18,7 @@ class SleepPreventionManager: ObservableObject {
 
     @Published private(set) var hasExternalDisplay: Bool = false
     @Published private(set) var remainingTimeFormatted: String = ""
-    
+
     private var deactivationDate: Date?
     private var countdownTimer: Timer?
     private let batteryMonitor: BatteryMonitor
@@ -53,10 +53,10 @@ class SleepPreventionManager: ObservableObject {
     private init() {
         // Initialize battery monitor without callback first
         batteryMonitor = BatteryMonitor()
-        
+
         let shouldStartOnLaunch = UserDefaults.standard.bool(forKey: "startSessionOnLaunch")
         self.isPreventingSleep = shouldStartOnLaunch
-        
+
         if shouldStartOnLaunch {
             print("🚀 Starting session on launch as per user preference.")
         }
@@ -64,7 +64,7 @@ class SleepPreventionManager: ObservableObject {
         setupNotifications()
         updateDisplayStatus()
         updateSleepPrevention()
-        
+
         // Set the callback after self is fully initialized
         batteryMonitor.onStatusChange = { [weak self] in
             Task { @MainActor in
@@ -78,20 +78,20 @@ class SleepPreventionManager: ObservableObject {
         // Ensure all assertions are released when the object is deinitialized.
         activeAssertionIDs.values.forEach { IOPMAssertionRelease($0) }
         activeAssertionIDs.removeAll()
-        
+
         sessionTimer?.invalidate()
         countdownTimer?.invalidate()
-        
+
         NotificationCenter.default.removeObserver(self)
         NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
-    
+
     // MARK: - Public Methods
 
     func toggle() {
         isPreventingSleep.toggle()
     }
-    
+
     // MARK: - Battery Check
 
     private func handleBatteryStatusChange() {
@@ -105,7 +105,7 @@ class SleepPreventionManager: ObservableObject {
             )
         }
     }
-    
+
     // MARK: - Core Logic
 
     /// The main function that decides which assertions should be active.
@@ -126,14 +126,14 @@ class SleepPreventionManager: ObservableObject {
                 )
                 return
             }
-            
+
             let timeInterval: TimeInterval?
             let durationLabel: String
 
             if UserDefaults.standard.bool(forKey: "isCustomDurationEnabled") {
                 let value = UserDefaults.standard.integer(forKey: "customDurationValue")
                 let unit = UserDefaults.standard.string(forKey: "customDurationUnit") ?? "minutes"
-                
+
                 if value > 0 {
                     timeInterval = unit == "hours" ? TimeInterval(value * 3600) : TimeInterval(value * 60)
                     durationLabel = "\(value) \(unit)"
@@ -147,10 +147,10 @@ class SleepPreventionManager: ObservableObject {
                 timeInterval = duration.timeInterval
                 durationLabel = duration.rawValue
             }
-            
+
             if let interval = timeInterval {
                 deactivationDate = Date().addingTimeInterval(interval)
-                
+
                 let sessionTimer = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
                     Task { @MainActor in
                         self?.isPreventingSleep = false
@@ -159,7 +159,7 @@ class SleepPreventionManager: ObservableObject {
                 }
                 RunLoop.current.add(sessionTimer, forMode: .common)
                 self.sessionTimer = sessionTimer
-                
+
                 let countdownTimer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
                     Task { @MainActor in
                         self?.updateRemainingTime()
@@ -182,27 +182,27 @@ class SleepPreventionManager: ObservableObject {
         manageAssertion(type: .preventSystemSleep, enable: shouldPreventSystemSleep)
         manageAssertion(type: .preventDisplaySleep, enable: shouldPreventDisplaySleep)
     }
-    
+
     private func updateRemainingTime() {
         guard let deactivationDate = deactivationDate else {
             remainingTimeFormatted = ""
             return
         }
-        
+
         let remaining = deactivationDate.timeIntervalSinceNow
-        
+
         if remaining > 0 {
             let formatter = DateComponentsFormatter()
             formatter.allowedUnits = [.hour, .minute, .second]
             formatter.unitsStyle = .positional
             formatter.zeroFormattingBehavior = .pad
-            
+
             let remainingString = formatter.string(from: remaining) ?? ""
-            
+
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "HH:mm"
             let endTimeString = dateFormatter.string(from: deactivationDate)
-            
+
             remainingTimeFormatted = "\(remainingString) (until \(endTimeString))"
         } else {
             remainingTimeFormatted = ""
@@ -255,7 +255,7 @@ class SleepPreventionManager: ObservableObject {
             name: NSApplication.didChangeScreenParametersNotification,
             object: nil
         )
-        
+
         // Listen for sleep/wake notifications
         workspaceCenter.addObserver(
             self,
@@ -272,19 +272,21 @@ class SleepPreventionManager: ObservableObject {
 
         // print("📌 Notifications configured")
     }
-    
+
     @objc private func systemWillSleep(_ notification: Notification) {
         guard UserDefaults.standard.bool(forKey: "endSessionOnManualSleep"),
-            isPreventingSleep else { return }
-        
+            isPreventingSleep
+        else { return }
+
         isPreventingSleep = false
         print("💤 System will sleep, ending session as per user preference.")
     }
 
     @objc private func systemDidWake(_ notification: Notification) {
         guard UserDefaults.standard.bool(forKey: "startSessionAfterWakingFromSleep"),
-            !isPreventingSleep else { return }
-        
+            !isPreventingSleep
+        else { return }
+
         isPreventingSleep = true
         print("🌅 System did wake, starting session as per user preference.")
     }
@@ -298,21 +300,21 @@ class SleepPreventionManager: ObservableObject {
         self.hasExternalDisplay = NSScreen.screens.count > 1
         // print("ℹ️ Current state: hasExternalDisplay=\(hasExternalDisplay)")
     }
-    
+
     private func startPreventingSleep() {
         print("✅ Sleep prevention started successfully")
         sendNotification(title: "Kawa", message: "Sleep prevention activated")
     }
-    
+
     private func stopPreventingSleep() {
         print("⏹️ Sleep prevention stopped")
         sendNotification(title: "Kawa", message: "Sleep prevention deactivated")
     }
-    
+
     private func sendNotification(title: String, message: String) {
         // Check user preference
         guard UserDefaults.standard.bool(forKey: "notificationsEnabled") else { return }
-        
+
         // Ensure notifications are authorized
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             // Check if notifications are allowed
@@ -320,20 +322,20 @@ class SleepPreventionManager: ObservableObject {
                 print("❌ Notifications not authorized")
                 return
             }
-            
+
             // Create notification content
             let content = UNMutableNotificationContent()
             content.title = title
             content.body = message
             content.sound = .default
-            
+
             // Create a trigger (nil means deliver immediately)
             let request = UNNotificationRequest(
                 identifier: UUID().uuidString,
                 content: content,
                 trigger: nil
             )
-            
+
             // Add the notification request
             UNUserNotificationCenter.current().add(request) { error in
                 if let error = error {
