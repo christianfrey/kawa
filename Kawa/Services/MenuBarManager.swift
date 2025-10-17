@@ -5,8 +5,8 @@ import SwiftUI
 // MARK: - Quick Start Click Mode
 
 enum QuickStartClickMode: String, CaseIterable {
-    case left = "left"
-    case right = "right"
+    case left
+    case right
 
     var displayName: String {
         switch self {
