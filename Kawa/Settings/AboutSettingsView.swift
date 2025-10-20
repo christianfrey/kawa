@@ -33,7 +33,7 @@ struct AboutSettingsView: View {
                     },
                     label: {
                         Text("GitHub Repository")
-                    }
+                    },
                 )
                 .padding(.top, 8)
             }

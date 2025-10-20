@@ -32,16 +32,16 @@ class SleepPreventionManager: ObservableObject {
         var name: CFString {
             switch self {
             // Prevents the system from sleeping automatically due to a lack of user activity
-            case .preventSystemSleep: return "PreventUserIdleSystemSleep" as CFString
+            case .preventSystemSleep: "PreventUserIdleSystemSleep" as CFString
             // Prevents the display from dimming automatically
-            case .preventDisplaySleep: return "PreventUserIdleDisplaySleep" as CFString
+            case .preventDisplaySleep: "PreventUserIdleDisplaySleep" as CFString
             }
         }
 
         var reason: CFString {
             switch self {
-            case .preventSystemSleep: return "Kawa: Preventing system sleep" as CFString
-            case .preventDisplaySleep: return "Kawa: Preventing display sleep" as CFString
+            case .preventSystemSleep: "Kawa: Preventing system sleep" as CFString
+            case .preventDisplaySleep: "Kawa: Preventing display sleep" as CFString
             }
         }
     }
@@ -55,7 +55,7 @@ class SleepPreventionManager: ObservableObject {
         batteryMonitor = BatteryMonitor()
 
         let shouldStartOnLaunch = UserDefaults.standard.bool(forKey: "startSessionOnLaunch")
-        self.isPreventingSleep = shouldStartOnLaunch
+        isPreventingSleep = shouldStartOnLaunch
 
         if shouldStartOnLaunch {
             print("🚀 Starting session on launch as per user preference.")
@@ -96,12 +96,12 @@ class SleepPreventionManager: ObservableObject {
 
     private func handleBatteryStatusChange() {
         // If prevention is active and battery is now too low, disable it
-        if isPreventingSleep && batteryMonitor.shouldDeactivatePrevention() {
+        if isPreventingSleep, batteryMonitor.shouldDeactivatePrevention() {
             print("🔋 Battery too low (\(batteryMonitor.batteryLevel)%), disabling prevention")
             isPreventingSleep = false
             sendNotification(
                 title: "Kawa",
-                message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)"
+                message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)",
             )
         }
     }
@@ -122,7 +122,7 @@ class SleepPreventionManager: ObservableObject {
                 isPreventingSleep = false
                 sendNotification(
                     title: "Kawa",
-                    message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)"
+                    message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)",
                 )
                 return
             }
@@ -184,7 +184,7 @@ class SleepPreventionManager: ObservableObject {
     }
 
     private func updateRemainingTime() {
-        guard let deactivationDate = deactivationDate else {
+        guard let deactivationDate else {
             remainingTimeFormatted = ""
             return
         }
@@ -221,7 +221,7 @@ class SleepPreventionManager: ObservableObject {
                 type.name,
                 IOPMAssertionLevel(kIOPMAssertionLevelOn),
                 type.reason,
-                &assertionID
+                &assertionID,
             )
 
             if result == kIOReturnSuccess {
@@ -253,7 +253,7 @@ class SleepPreventionManager: ObservableObject {
             self,
             selector: #selector(displayConfigurationChanged),
             name: NSApplication.didChangeScreenParametersNotification,
-            object: nil
+            object: nil,
         )
 
         // Listen for sleep/wake notifications
@@ -261,30 +261,30 @@ class SleepPreventionManager: ObservableObject {
             self,
             selector: #selector(systemWillSleep),
             name: NSWorkspace.willSleepNotification,
-            object: nil
+            object: nil,
         )
         workspaceCenter.addObserver(
             self,
             selector: #selector(systemDidWake),
             name: NSWorkspace.didWakeNotification,
-            object: nil
+            object: nil,
         )
 
         // print("📌 Notifications configured")
     }
 
-    @objc private func systemWillSleep(_ notification: Notification) {
+    @objc private func systemWillSleep(_: Notification) {
         guard UserDefaults.standard.bool(forKey: "endSessionOnManualSleep"),
-            isPreventingSleep
+              isPreventingSleep
         else { return }
 
         isPreventingSleep = false
         print("💤 System will sleep, ending session as per user preference.")
     }
 
-    @objc private func systemDidWake(_ notification: Notification) {
+    @objc private func systemDidWake(_: Notification) {
         guard UserDefaults.standard.bool(forKey: "startSessionAfterWakingFromSleep"),
-            !isPreventingSleep
+              !isPreventingSleep
         else { return }
 
         isPreventingSleep = true
@@ -297,7 +297,7 @@ class SleepPreventionManager: ObservableObject {
     }
 
     private func updateDisplayStatus() {
-        self.hasExternalDisplay = NSScreen.screens.count > 1
+        hasExternalDisplay = NSScreen.screens.count > 1
         // print("ℹ️ Current state: hasExternalDisplay=\(hasExternalDisplay)")
     }
 
@@ -333,12 +333,12 @@ class SleepPreventionManager: ObservableObject {
             let request = UNNotificationRequest(
                 identifier: UUID().uuidString,
                 content: content,
-                trigger: nil
+                trigger: nil,
             )
 
             // Add the notification request
             UNUserNotificationCenter.current().add(request) { error in
-                if let error = error {
+                if let error {
                     print("❌ Error sending notification: \(error)")
                 } else {
                     print("✅ Notification sent successfully")

@@ -1,9 +1,7 @@
 import Foundation
 import IOKit.ps
 
-@MainActor
-class BatteryMonitor: ObservableObject {
-
+@MainActor class BatteryMonitor: ObservableObject {
     @Published private(set) var isOnBattery: Bool = false
     @Published private(set) var batteryLevel: Int = 100
 
@@ -40,22 +38,22 @@ class BatteryMonitor: ObservableObject {
 
             // Get battery level
             if let currentCapacity = dict[kIOPSCurrentCapacityKey] as? Int,
-                let maxCapacity = dict[kIOPSMaxCapacityKey] as? Int,
-                maxCapacity > 0
+               let maxCapacity = dict[kIOPSMaxCapacityKey] as? Int,
+               maxCapacity > 0
             {
                 currentBatteryLevel = (currentCapacity * 100) / maxCapacity
             }
         }
 
-        self.isOnBattery = !isOnAC
-        self.batteryLevel = currentBatteryLevel
+        isOnBattery = !isOnAC
+        batteryLevel = currentBatteryLevel
 
         // print("🔋 Battery status: \(batteryLevel)%, isOnBattery: \(isOnBattery)")
     }
 
     func shouldDeactivatePrevention() -> Bool {
         let deactivateOnLowBattery = UserDefaults.standard.bool(forKey: "deactivateOnLowBattery")
-        guard deactivateOnLowBattery && isOnBattery else { return false }
+        guard deactivateOnLowBattery, isOnBattery else { return false }
 
         let threshold = UserDefaults.standard.double(forKey: "batteryThreshold")
         return Double(batteryLevel) < threshold
@@ -65,14 +63,16 @@ class BatteryMonitor: ObservableObject {
 
     private func setupPowerSourceNotification() {
         let context = UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque())
-        powerSourceRunLoopSource = IOPSNotificationCreateRunLoopSource(batteryMonitorCallback, context)?.takeRetainedValue()
+        powerSourceRunLoopSource = IOPSNotificationCreateRunLoopSource(
+            batteryMonitorCallback, context,
+        )?.takeRetainedValue()
 
         if let source = powerSourceRunLoopSource {
             CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .defaultMode)
         }
     }
 
-    internal func handlePowerSourceChange() {
+    func handlePowerSourceChange() {
         updateBatteryStatus()
         onStatusChange?()
     }
@@ -81,11 +81,9 @@ class BatteryMonitor: ObservableObject {
 // MARK: - C Callback Function
 
 private func batteryMonitorCallback(context: UnsafeMutableRawPointer?) {
-    guard let context = context else { return }
+    guard let context else { return }
 
     let monitor = Unmanaged<BatteryMonitor>.fromOpaque(context).takeUnretainedValue()
 
-    DispatchQueue.main.async {
-        monitor.handlePowerSourceChange()
-    }
+    DispatchQueue.main.async { monitor.handlePowerSourceChange() }
 }

@@ -1,10 +1,9 @@
 import SwiftUI
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-
     private var menuBarManager: MenuBarManager?
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationDidFinishLaunching(_: Notification) {
         print("🎯 App finished launching")
 
         // Hide from dock

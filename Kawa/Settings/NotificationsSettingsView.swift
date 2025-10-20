@@ -83,16 +83,16 @@ struct NotificationsSettingsView: View {
     private func checkNotificationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async {
-                self.authorizationStatus = settings.authorizationStatus
+                authorizationStatus = settings.authorizationStatus
                 if settings.authorizationStatus == .denied {
-                    self.notificationsEnabled = false
+                    notificationsEnabled = false
                 }
             }
         }
     }
 
     private func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in
             checkNotificationStatus()
         }
     }

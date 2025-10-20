@@ -2,7 +2,6 @@ import Foundation
 
 // Manages the "Closed-Display Mode" (CDM), aka Clamshell Mode
 enum ClosedDisplayManager {
-
     // Enables or disables closed-display mode
     // - Parameter enabled: true to prevent sleep when lid is closed, false to allow normal behavior
     // - Returns: true if operation succeeded, false otherwise
@@ -25,7 +24,7 @@ enum ClosedDisplayManager {
 
         // Prepare input value (1 = enable CDM, 0 = disable)
         var input: UInt64 = enabled ? 1 : 0
-        let selector: UInt32 = UInt32(kPMSetClamshellSleepState)
+        let selector = UInt32(kPMSetClamshellSleepState)
 
         // Call the kernel method to set clamshell sleep state
         let result = withUnsafePointer(to: &input) { inputPtr in

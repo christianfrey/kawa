@@ -15,32 +15,32 @@ enum DefaultDuration: String, CaseIterable, Identifiable {
     case twelveHours = "12 hours"
     case twentyFourHours = "24 hours"
 
-    var id: String { self.rawValue }
+    var id: String { rawValue }
 
     var timeInterval: TimeInterval? {
         switch self {
         case .indefinitely:
-            return nil
+            nil
         case .fiveMinutes:
-            return 5 * 60
+            5 * 60
         case .tenMinutes:
-            return 10 * 60
+            10 * 60
         case .fifteenMinutes:
-            return 15 * 60
+            15 * 60
         case .thirtyMinutes:
-            return 30 * 60
+            30 * 60
         case .oneHour:
-            return 60 * 60
+            60 * 60
         case .twoHours:
-            return 2 * 60 * 60
+            2 * 60 * 60
         case .fiveHours:
-            return 5 * 60 * 60
+            5 * 60 * 60
         case .eightHours:
-            return 8 * 60 * 60
+            8 * 60 * 60
         case .twelveHours:
-            return 12 * 60 * 60
+            12 * 60 * 60
         case .twentyFourHours:
-            return 24 * 60 * 60
+            24 * 60 * 60
         }
     }
 }
@@ -53,7 +53,6 @@ enum DurationUnit: String, CaseIterable, Identifiable {
 // MARK: - Content View
 
 struct DurationSettingsView: View {
-
     @AppStorage("defaultDuration")
     private var defaultDuration: DefaultDuration.RawValue = DefaultDuration.indefinitely.rawValue
 

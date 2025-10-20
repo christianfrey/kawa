@@ -3,9 +3,6 @@ import SwiftUI
 // MARK: - General Settings View // TODO: rename to - Content View ?
 
 struct GeneralSettingsView: View {
-
-    // MARK: - Properties
-
     @StateObject private var loginItemManager = LoginItemManager.shared
 
     @AppStorage("startSessionOnLaunch")
@@ -31,7 +28,7 @@ struct GeneralSettingsView: View {
     private var isLaunchAtLoginEnabled: Binding<Bool> {
         Binding(
             get: { loginItemManager.isEnabled },
-            set: { _ in loginItemManager.toggle() }
+            set: { _ in loginItemManager.toggle() },
         )
     }
 
@@ -40,14 +37,14 @@ struct GeneralSettingsView: View {
             get: { preventLidSleep },
             set: { newValue in
                 preventLidSleep = newValue
-            }
+            },
         )
     }
 
     private var quickStartClickMode: Binding<QuickStartClickMode> {
         Binding(
             get: { QuickStartClickMode(rawValue: quickStartClickModeRaw) ?? .right },
-            set: { quickStartClickModeRaw = $0.rawValue }
+            set: { quickStartClickModeRaw = $0.rawValue },
         )
     }
 
@@ -118,7 +115,7 @@ struct GeneralSettingsView: View {
                 }
             }
         }
-        .onChange(of: preventLidSleep) { oldValue, newValue in
+        .onChange(of: preventLidSleep) { _, newValue in
             ClosedDisplayManager.setEnabled(newValue)
         }
         .padding(.vertical, 20)

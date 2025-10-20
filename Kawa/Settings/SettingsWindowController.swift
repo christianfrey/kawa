@@ -23,7 +23,7 @@ final class SettingsWindowController: NSWindowController {
             contentRect: NSRect(x: 0, y: 0, width: 480, height: 300),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
-            defer: false
+            defer: false,
         )
         window.center()
         window.isReleasedWhenClosed = false
@@ -34,7 +34,8 @@ final class SettingsWindowController: NSWindowController {
         setupToolbar()
     }
 
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -59,7 +60,7 @@ final class SettingsWindowController: NSWindowController {
     func showPane(identifier: String) {
         print("showPane called - identifier=\(identifier)")
         guard let pane = panes.first(where: { $0.paneIdentifier == identifier }),
-            let window = window
+              let window
         else {
             return
         }
@@ -104,7 +105,7 @@ final class SettingsWindowController: NSWindowController {
             x: 0,
             y: contentView.bounds.height - newSize.height,
             width: newFrame.width,
-            height: newSize.height
+            height: newSize.height,
         )
         contentView.addSubview(newView)
         currentTabView = newView
@@ -116,38 +117,36 @@ final class SettingsWindowController: NSWindowController {
         }
 
         // Animate transition
-        NSAnimationContext.runAnimationGroup(
-            { context in
-                context.duration = 0.25
-                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.25
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-                // Animate window resize
-                window.animator().setFrame(frame, display: true)
+            // Animate window resize
+            window.animator().setFrame(frame, display: true)
 
-                // Animate fade
-                newView.animator().alphaValue = 1.0
-                oldView?.animator().alphaValue = 0.0
-            },
-            completionHandler: { [weak self, weak newView] in
-                guard
-                    let self,
-                    let newView,
-                    let contentView = self.window?.contentView
-                else { return }
+            // Animate fade
+            newView.animator().alphaValue = 1.0
+            oldView?.animator().alphaValue = 0.0
+        } completionHandler: { [weak self, weak newView] in
+            guard
+                let self,
+                let newView,
+                let contentView = self.window?.contentView
+            else { return }
 
-                // Keep only the active pane
-                guard self.currentTabView === newView else { return }
-                contentView.subviews
-                    .filter { $0 != newView }
-                    .forEach { $0.removeFromSuperview() }
-            })
+            // Keep only the active pane
+            guard currentTabView === newView else { return }
+            contentView.subviews
+                .filter { $0 != newView }
+                .forEach { $0.removeFromSuperview() }
+        }
     }
 
     // MARK: - Show Window
 
     func show(pane identifier: String? = nil) {
         print("show called - identifier=\(String(describing: identifier))")
-        if let identifier = identifier {
+        if let identifier {
             print("showPane will be called - identifier \(identifier)")
             showPane(identifier: identifier)
         }
@@ -161,7 +160,7 @@ final class SettingsWindowController: NSWindowController {
 // MARK: - Toolbar Delegate
 
 extension SettingsWindowController: NSToolbarDelegate {
-    func toolbar(_ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar flag: Bool)
+    func toolbar(_: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier, willBeInsertedIntoToolbar _: Bool)
         -> NSToolbarItem?
     {
         guard let pane = panes.first(where: { $0.paneIdentifier == itemIdentifier.rawValue }) else {
@@ -177,16 +176,16 @@ extension SettingsWindowController: NSToolbarDelegate {
         return item
     }
 
-    func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return panes.map { NSToolbarItem.Identifier($0.paneIdentifier) }
+    func toolbarAllowedItemIdentifiers(_: NSToolbar) -> [NSToolbarItem.Identifier] {
+        panes.map { NSToolbarItem.Identifier($0.paneIdentifier) }
     }
 
-    func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return panes.map { NSToolbarItem.Identifier($0.paneIdentifier) }
+    func toolbarDefaultItemIdentifiers(_: NSToolbar) -> [NSToolbarItem.Identifier] {
+        panes.map { NSToolbarItem.Identifier($0.paneIdentifier) }
     }
 
-    func toolbarSelectableItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        return panes.map { NSToolbarItem.Identifier($0.paneIdentifier) }
+    func toolbarSelectableItemIdentifiers(_: NSToolbar) -> [NSToolbarItem.Identifier] {
+        panes.map { NSToolbarItem.Identifier($0.paneIdentifier) }
     }
 
     @objc private func toolbarItemClicked(_ sender: NSToolbarItem) {
@@ -202,14 +201,15 @@ final class SettingsPaneHostingController<Content: View>: NSHostingController<Co
     let toolbarItemIcon: NSImage
 
     init(identifier: String, title: String, icon: NSImage, @ViewBuilder content: () -> Content) {
-        self.paneIdentifier = identifier
-        self.paneTitle = title
-        self.toolbarItemIcon = icon
+        paneIdentifier = identifier
+        paneTitle = title
+        toolbarItemIcon = icon
 
         super.init(rootView: content())
     }
 
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }

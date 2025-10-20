@@ -1,4 +1,4 @@
-import AppKit  // MenuBarExtra does not support right-click handling, so use NSStatusBar
+import AppKit // MenuBarExtra does not support right-click handling, so use NSStatusBar
 import Combine
 import SwiftUI
 
@@ -10,8 +10,8 @@ enum QuickStartClickMode: String, CaseIterable {
 
     var displayName: String {
         switch self {
-        case .left: return "Left Click"
-        case .right: return "Right Click"
+        case .left: "Left Click"
+        case .right: "Right Click"
         }
     }
 }
@@ -26,9 +26,9 @@ extension UserDefaults {
     var quickStartClickMode: QuickStartClickMode {
         get {
             guard let value = string(forKey: Keys.quickStartClickMode),
-                let mode = QuickStartClickMode(rawValue: value)
+                  let mode = QuickStartClickMode(rawValue: value)
             else {
-                return .right  // Default mode
+                return .right // Default mode
             }
             return mode
         }
@@ -42,7 +42,6 @@ extension UserDefaults {
 
 @MainActor
 final class MenuBarManager: NSObject, ObservableObject {
-
     // MARK: - Properties
 
     private var statusItem: NSStatusItem?
@@ -80,42 +79,42 @@ final class MenuBarManager: NSObject, ObservableObject {
                 identifier: "general",
                 title: "General",
                 icon: NSImage(systemSymbolName: "gearshape", accessibilityDescription: "General")!,
-                content: { GeneralSettingsView() }
+                content: { GeneralSettingsView() },
             ),
             createSettingsPane(
                 identifier: "duration",
                 title: "Duration",
                 icon: NSImage(systemSymbolName: "clock", accessibilityDescription: "Duration")!,
-                content: { DurationSettingsView() }
+                content: { DurationSettingsView() },
             ),
             createSettingsPane(
                 identifier: "battery",
                 title: "Battery",
                 icon: NSImage(systemSymbolName: "battery.75", accessibilityDescription: "Battery")!,
-                content: { BatterySettingsView() }
+                content: { BatterySettingsView() },
             ),
             createSettingsPane(
                 identifier: "notifications",
                 title: "Notifications",
                 icon: NSImage(systemSymbolName: "bell.badge", accessibilityDescription: "Notifications")!,
-                content: { NotificationsSettingsView() }
+                content: { NotificationsSettingsView() },
             ),
             createSettingsPane(
                 identifier: "about",
                 title: "About",
                 icon: NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")!,
-                content: { AboutSettingsView() }
+                content: { AboutSettingsView() },
             ),
         ]
 
         return SettingsWindowController(panes: panes)
     }
 
-    private func createSettingsPane<V: View>(
+    private func createSettingsPane(
         identifier: String,
         title: String,
         icon: NSImage,
-        @ViewBuilder content: () -> V
+        @ViewBuilder content: () -> some View,
     ) -> any SettingsPane {
         let view = content()
             .frame(width: 600, alignment: .topLeading)
@@ -124,7 +123,7 @@ final class MenuBarManager: NSObject, ObservableObject {
             identifier: identifier,
             title: title,
             icon: icon,
-            content: { view }
+            content: { view },
         )
 
         return hostingController
@@ -163,7 +162,7 @@ final class MenuBarManager: NSObject, ObservableObject {
         valueLabel.identifier = NSUserInterfaceItemIdentifier("RemainingTimeValue")
         // valueLabel.drawsBackground = true
         // valueLabel.backgroundColor = .systemGreen.withAlphaComponent(0.3)
-        self.remainingTimeValueLabel = valueLabel
+        remainingTimeValueLabel = valueLabel
 
         // Stack view vertical
         let stackView = NSStackView(views: [titleLabel, valueLabel])
@@ -260,7 +259,7 @@ final class MenuBarManager: NSObject, ObservableObject {
 
     // MARK: - Click Handler
 
-    @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
+    @objc private func statusItemClicked(_: NSStatusBarButton) {
         guard let event = NSApp.currentEvent else { return }
 
         let isQuickAction = isQuickActionEvent(event)
@@ -277,11 +276,11 @@ final class MenuBarManager: NSObject, ObservableObject {
     private func isQuickActionEvent(_ event: NSEvent) -> Bool {
         switch event.type {
         case .leftMouseUp:
-            return quickStartClickMode == .left
+            quickStartClickMode == .left
         case .rightMouseUp:
-            return quickStartClickMode == .right
+            quickStartClickMode == .right
         default:
-            return false
+            false
         }
     }
 

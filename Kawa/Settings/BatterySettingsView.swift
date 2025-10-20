@@ -16,7 +16,7 @@ struct BatterySettingsView: View {
                     Toggle("Deactivate when battery is low", isOn: $deactivateOnLowBattery)
 
                     HStack {
-                        Slider(value: $batteryThreshold, in: 10...90, step: 5)
+                        Slider(value: $batteryThreshold, in: 10 ... 90, step: 5)
                         Text("\(Int(batteryThreshold))%")
                             .frame(width: 40, alignment: .trailing)
                     }
