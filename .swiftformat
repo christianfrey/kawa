@@ -1,2 +1,3 @@
 # Rule configurations
 --indent 4
+--header strip
