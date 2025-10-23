@@ -16,7 +16,6 @@ class SleepPreventionManager: ObservableObject {
         }
     }
 
-    @Published private(set) var hasExternalDisplay: Bool = false
     @Published private(set) var remainingTimeFormatted: String = ""
 
     private var deactivationDate: Date?
@@ -62,7 +61,6 @@ class SleepPreventionManager: ObservableObject {
         }
 
         setupNotifications()
-        updateDisplayStatus()
         updateSleepPrevention()
 
         // Set the callback after self is fully initialized
@@ -250,12 +248,6 @@ class SleepPreventionManager: ObservableObject {
 
     private func setupNotifications() {
         let workspaceCenter = NSWorkspace.shared.notificationCenter
-        workspaceCenter.addObserver(
-            self,
-            selector: #selector(displayConfigurationChanged),
-            name: NSApplication.didChangeScreenParametersNotification,
-            object: nil,
-        )
 
         // Listen for sleep/wake notifications
         workspaceCenter.addObserver(
@@ -290,16 +282,6 @@ class SleepPreventionManager: ObservableObject {
 
         isPreventingSleep = true
         print("🌅 System did wake, starting session as per user preference.")
-    }
-
-    @objc private func displayConfigurationChanged() {
-        // print("🔄 Display configuration changed, updating...")
-        updateDisplayStatus()
-    }
-
-    private func updateDisplayStatus() {
-        hasExternalDisplay = NSScreen.screens.count > 1
-        // print("ℹ️ Current state: hasExternalDisplay=\(hasExternalDisplay)")
     }
 
     private func startPreventingSleep() {
