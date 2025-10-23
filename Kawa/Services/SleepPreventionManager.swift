@@ -131,12 +131,13 @@ class SleepPreventionManager: ObservableObject {
             let durationLabel: String
 
             if UserDefaults.standard.bool(forKey: "isCustomDurationEnabled") {
-                let value = UserDefaults.standard.integer(forKey: "customDurationValue")
-                let unit = UserDefaults.standard.string(forKey: "customDurationUnit") ?? "minutes"
+                let hours = UserDefaults.standard.integer(forKey: "customHours")
+                let minutes = UserDefaults.standard.integer(forKey: "customMinutes")
+                let totalMinutes = (hours * 60) + minutes
 
-                if value > 0 {
-                    timeInterval = unit == "hours" ? TimeInterval(value * 3600) : TimeInterval(value * 60)
-                    durationLabel = "\(value) \(unit)"
+                if totalMinutes > 0 {
+                    timeInterval = TimeInterval(totalMinutes * 60)
+                    durationLabel = "\(hours)h \(minutes)m"
                 } else {
                     timeInterval = nil
                     durationLabel = "indefinitely"

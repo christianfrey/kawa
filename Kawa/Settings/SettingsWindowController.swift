@@ -32,11 +32,37 @@ final class SettingsWindowController: NSWindowController {
         super.init(window: window)
 
         setupToolbar()
+        setupNotifications()
     }
 
     @available(*, unavailable)
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    // MARK: - Notifications Setup
+
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleContentSizeChange),
+            name: NSNotification.Name("SettingsPaneContentSizeChanged"),
+            object: nil,
+        )
+    }
+
+    @objc private func handleContentSizeChange(_ notification: Notification) {
+        guard let paneIdentifier = notification.userInfo?["paneIdentifier"] as? String,
+              paneIdentifier == currentPaneIdentifier
+        else {
+            return
+        }
+
+        resizeCurrentPane()
     }
 
     // MARK: - Toolbar Setup
@@ -52,6 +78,41 @@ final class SettingsWindowController: NSWindowController {
 
         if let firstPane = panes.first {
             toolbar.selectedItemIdentifier = NSToolbarItem.Identifier(firstPane.paneIdentifier)
+        }
+    }
+
+    // MARK: - Pane Resizing
+
+    private func resizeCurrentPane() {
+        guard let window,
+              let contentView = window.contentView,
+              let currentView = currentTabView
+        else {
+            return
+        }
+
+        // Compute the size of the window needed to fully fit the current pane
+        let newSize = currentView.fittingSize
+        let newWindowFrame = window.frameRect(forContentRect: NSRect(origin: .zero, size: newSize))
+
+        // Keep the top-left corner of the window fixed during resize
+        var targetFrame = window.frame
+        targetFrame.origin.y += targetFrame.height - newWindowFrame.height
+        targetFrame.size = newWindowFrame.size
+
+        // Pre-align before resize to avoid flicker when growing
+        currentView.frame = NSRect(
+            x: 0,
+            y: contentView.bounds.height - newSize.height,
+            width: contentView.bounds.width,
+            height: newSize.height,
+        )
+
+        // Animate the window resize smoothly
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.25
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            window.animator().setFrame(targetFrame, display: true)
         }
     }
 
