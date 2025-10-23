@@ -58,7 +58,7 @@ final class SettingsWindowController: NSWindowController {
     // MARK: - Pane Switching
 
     func showPane(identifier: String) {
-        print("showPane called - identifier=\(identifier)")
+        // print("showPane called - identifier=\(identifier)")
         guard let pane = panes.first(where: { $0.paneIdentifier == identifier }),
               let window
         else {
@@ -145,9 +145,9 @@ final class SettingsWindowController: NSWindowController {
     // MARK: - Show Window
 
     func show(pane identifier: String? = nil) {
-        print("show called - identifier=\(String(describing: identifier))")
+        // print("show called - identifier=\(String(describing: identifier))")
         if let identifier {
-            print("showPane will be called - identifier \(identifier)")
+            // print("showPane will be called - identifier \(identifier)")
             showPane(identifier: identifier)
         }
 
