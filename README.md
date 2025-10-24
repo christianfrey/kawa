@@ -31,32 +31,25 @@ Kawa is a small macOS menu bar app that keeps your Mac awake using system power 
 
 <img src="./Assets/settings-01-general-tab.png" width="600">
 
-- Launch at login
-- Start a session automatically at launch
-- Allow display sleep
-- End session on manual system sleep
-- Start a session after system wake
-- Menu bar icon click behavior (left/right-click actions)
+Manage general app behavior, including launching at login, starting a session automatically at launch, ending session on manual system sleep, resuming session after system wake, allowing display sleep, menu bar icon click actions, and Clamshell Mode (keep Mac awake when lid is closed).
 
 ### Duration
 
 <img src="./Assets/settings-02-duration-tab.png" width="600">
 
-- Default session durations (e.g. 30 minutes, 1 hour, 5 hours, indefinitely)
-- Custom duration for a single session
+Set default session duration or pick a custom one.
 
 ### Battery
 
 <img src="./Assets/settings-03-battery-tab.png" width="600">
 
-- Disable sessions when battery is below a configured percentage
+Configure battery safety: automatically disable sessions below a certain battery level.
 
 ### Notifications
 
 <img src="./Assets/settings-04-notifications-tab.png" width="600">
 
-- Enable/disable notifications
-- Request/manage notification permission
+Enable or disable notifications and manage macOS notification access.
 
 ## Installation
 
