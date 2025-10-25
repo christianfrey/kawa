@@ -48,6 +48,7 @@ class SleepPreventionManager: ObservableObject {
     // A single dictionary to manage all active assertions.
     private var activeAssertionIDs: [AssertionType: IOPMAssertionID] = [:]
     private var sessionTimer: Timer?
+    private var reminderTimer: Timer?
 
     private init() {
         // Initialize battery monitor without callback first
@@ -78,6 +79,7 @@ class SleepPreventionManager: ObservableObject {
         activeAssertionIDs.removeAll()
 
         sessionTimer?.invalidate()
+        reminderTimer?.invalidate()
         countdownTimer?.invalidate()
 
         NotificationCenter.default.removeObserver(self)
@@ -97,6 +99,7 @@ class SleepPreventionManager: ObservableObject {
         if isPreventingSleep, batteryMonitor.shouldDeactivatePrevention() {
             print("🔋 Battery too low (\(batteryMonitor.batteryLevel)%), disabling prevention")
             isPreventingSleep = false
+            guard UserDefaults.standard.bool(forKey: "notifyOnDeactivation") else { return }
             sendNotification(
                 title: "Kawa",
                 message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)",
@@ -110,6 +113,7 @@ class SleepPreventionManager: ObservableObject {
     private func updateSleepPrevention() {
         sessionTimer?.invalidate()
         countdownTimer?.invalidate()
+        reminderTimer?.invalidate()
         deactivationDate = nil
         remainingTimeFormatted = ""
 
@@ -118,12 +122,15 @@ class SleepPreventionManager: ObservableObject {
             if batteryMonitor.shouldDeactivatePrevention() {
                 print("🔋 Prevention skipped: battery level too low (\(batteryMonitor.batteryLevel)%)")
                 isPreventingSleep = false
+                guard UserDefaults.standard.bool(forKey: "notifyOnDeactivation") else { return }
                 sendNotification(
                     title: "Kawa",
                     message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)",
                 )
                 return
             }
+
+            scheduleSessionReminder()
 
             let timeInterval: TimeInterval?
             let durationLabel: String
@@ -180,6 +187,37 @@ class SleepPreventionManager: ObservableObject {
         // Apply the desired state.
         manageAssertion(type: .preventSystemSleep, enable: shouldPreventSystemSleep)
         manageAssertion(type: .preventDisplaySleep, enable: shouldPreventDisplaySleep)
+    }
+
+    private func scheduleSessionReminder() {
+        guard UserDefaults.standard.bool(forKey: "sessionReminderEnabled") else { return }
+
+        let intervalValue = UserDefaults.standard.integer(forKey: "sessionReminderIntervalValue")
+        let intervalUnit = UserDefaults.standard.string(forKey: "sessionReminderIntervalUnit") ?? "minutes"
+
+        guard intervalValue > 0 else { return }
+
+        let timeInterval = if intervalUnit == "hours" {
+            TimeInterval(intervalValue * 3600)
+        } else {
+            TimeInterval(intervalValue * 60)
+        }
+
+        reminderTimer = Timer.scheduledTimer(
+            timeInterval: timeInterval,
+            target: self,
+            selector: #selector(sendSessionReminderNotification),
+            userInfo: nil,
+            repeats: true,
+        )
+        print("⏰ Session reminder scheduled every \(intervalValue) \(intervalUnit).")
+    }
+
+    @objc private func sendSessionReminderNotification() {
+        sendNotification(
+            title: "Kawa is active",
+            message: "Your Mac is being prevented from sleeping.",
+        )
     }
 
     private func updateRemainingTime() {
@@ -286,18 +324,17 @@ class SleepPreventionManager: ObservableObject {
 
     private func startPreventingSleep() {
         print("✅ Sleep prevention started successfully")
+        guard UserDefaults.standard.bool(forKey: "notifyOnActivation") else { return }
         sendNotification(title: "Kawa", message: "Sleep prevention activated")
     }
 
     private func stopPreventingSleep() {
         print("⏹️ Sleep prevention stopped")
+        guard UserDefaults.standard.bool(forKey: "notifyOnDeactivation") else { return }
         sendNotification(title: "Kawa", message: "Sleep prevention deactivated")
     }
 
     private func sendNotification(title: String, message: String) {
-        // Check user preference
-        guard UserDefaults.standard.bool(forKey: "notificationsEnabled") else { return }
-
         // Ensure notifications are authorized
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             // Check if notifications are allowed

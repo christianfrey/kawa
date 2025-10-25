@@ -4,35 +4,60 @@ import UserNotifications
 // MARK: - Content View
 
 struct NotificationsSettingsView: View {
-    @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
-    // @AppStorage("showNotifications") private var showNotifications = true
-    // @AppStorage("notifyOnActivation") private var notifyOnActivation = true
-    // @AppStorage("notifyOnDeactivation") private var notifyOnDeactivation = true
-    @State private var authorizationStatus: UNAuthorizationStatus = .notDetermined
+    @AppStorage("sessionReminderEnabled") private var sessionReminderEnabled: Bool = false
+    @AppStorage("sessionReminderIntervalValue") private var sessionReminderIntervalValue: Int = 15
+    @AppStorage("sessionReminderIntervalUnit") private var sessionReminderIntervalUnit: String = "minutes"
+    @AppStorage("notifyOnActivation") private var notifyOnActivation = true
+    @AppStorage("notifyOnDeactivation") private var notifyOnDeactivation = true
+    @State private var authorizationStatus: UNAuthorizationStatus?
+
+    // Pane identifier for notification
+    private let paneIdentifier = "notifications"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Notification Toggle
             HStack(alignment: .top, spacing: 12) {
-                Text("Notifications:")
+                Text("Send notification:")
                     .frame(width: 200, alignment: .trailing)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Toggle("Enable notifications", isOn: $notificationsEnabled)
+                    Toggle("When activated", isOn: $notifyOnActivation)
                         .disabled(authorizationStatus == .denied)
 
-                    Text("Turn on to receive notifications when sleep prevention starts or stops.")
+                    Toggle("When deactivated", isOn: $notifyOnDeactivation)
+                        .disabled(authorizationStatus == .denied)
+                }
+            }
+
+            Divider().padding(.vertical, 4)
+
+            // Session Reminder
+            HStack(alignment: .top, spacing: 12) {
+                Text("Session Reminder:")
+                    .frame(width: 200, alignment: .trailing)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("Enable session reminder", isOn: $sessionReminderEnabled)
+                        .disabled(authorizationStatus == .denied)
+
+                    Text("Receive a notification at a regular interval while Kawa is active.")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    // .background(Color.red.opacity(0.3))
-                    // .fixedSize(horizontal: false, vertical: true) // prevent flicker during animation
 
-                    // if showNotifications {
-                    //     Toggle("Notify when activated", isOn: $notifyOnActivation)
-                    //     Toggle("Notify when deactivated", isOn: $notifyOnDeactivation)
-                    // }
+                    if sessionReminderEnabled {
+                        HStack {
+                            TextField("Interval", value: $sessionReminderIntervalValue, formatter: NumberFormatter())
+                                .frame(width: 50)
+                            Picker("", selection: $sessionReminderIntervalUnit) {
+                                Text("minutes").tag("minutes")
+                                Text("hours").tag("hours")
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                            .frame(width: 120)
+                        }
+                    }
                 }
-                Spacer()
             }
 
             Divider().padding(.vertical, 4)
@@ -66,7 +91,7 @@ struct NotificationsSettingsView: View {
                             }
                         }
                     default:
-                        Text("Unknown permission status.")
+                        Text("Unknown permission status")
                     }
                 }
             }
@@ -74,19 +99,26 @@ struct NotificationsSettingsView: View {
         .padding(.vertical, 20)
         .padding(.horizontal, 30)
         .onAppear(perform: checkNotificationStatus)
-        // Check when app becomes active (user returns from System Settings)
+        .onChange(of: sessionReminderEnabled) { _, _ in notifyContentSizeChange() }
+        .onChange(of: authorizationStatus) { _, _ in notifyContentSizeChange() }
+        // Check when app becomes active (i.e. user returns from System Settings)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             checkNotificationStatus()
         }
+    }
+
+    private func notifyContentSizeChange() {
+        NotificationCenter.default.post(
+            name: NSNotification.Name("SettingsPaneContentSizeChanged"),
+            object: nil,
+            userInfo: ["paneIdentifier": paneIdentifier],
+        )
     }
 
     private func checkNotificationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async {
                 authorizationStatus = settings.authorizationStatus
-                if settings.authorizationStatus == .denied {
-                    notificationsEnabled = false
-                }
             }
         }
     }
