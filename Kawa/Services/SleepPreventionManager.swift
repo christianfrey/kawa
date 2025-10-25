@@ -98,13 +98,17 @@ class SleepPreventionManager: ObservableObject {
         // If prevention is active and battery is now too low, disable it
         if isPreventingSleep, batteryMonitor.shouldDeactivatePrevention() {
             print("🔋 Battery too low (\(batteryMonitor.batteryLevel)%), disabling prevention")
-            isPreventingSleep = false
-            guard UserDefaults.standard.bool(forKey: "notifyOnDeactivation") else { return }
-            sendNotification(
-                title: "Kawa",
-                message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)",
-            )
+            disablePreventionForLowBattery()
         }
+    }
+
+    private func disablePreventionForLowBattery() {
+        isPreventingSleep = false
+        guard UserDefaults.standard.bool(forKey: "showLowPowerNotification") else { return }
+        sendNotification(
+            title: "Kawa",
+            message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)"
+        )
     }
 
     // MARK: - Core Logic
@@ -121,12 +125,7 @@ class SleepPreventionManager: ObservableObject {
             // Check battery level before starting prevention
             if batteryMonitor.shouldDeactivatePrevention() {
                 print("🔋 Prevention skipped: battery level too low (\(batteryMonitor.batteryLevel)%)")
-                isPreventingSleep = false
-                guard UserDefaults.standard.bool(forKey: "notifyOnDeactivation") else { return }
-                sendNotification(
-                    title: "Kawa",
-                    message: "Prevention disabled: battery level too low (\(batteryMonitor.batteryLevel)%)",
-                )
+                disablePreventionForLowBattery()
                 return
             }
 
