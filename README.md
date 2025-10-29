@@ -2,9 +2,9 @@
 
 <p align="center">
   <img src="./Kawa/Assets.xcassets/AppIcon.appiconset/AppIcon_256.png" width="128">
-   <br>
+   <!-- <br>
    <strong>Status: </strong>In development<br>
-   <!--br>
+   <br>
    <a href="https://github.com/christianfrey/kawa/releases"><strong>Download</strong></a>
     · 
    <a-- href="https://github.com/christianfrey/kawa/commits">Commits</a-->
@@ -49,7 +49,7 @@ Configure battery safety: automatically disable sessions below a certain battery
 
 <img src="./Assets/settings-04-notifications-tab.png" width="600">
 
-Enable or disable notifications and manage macOS notification access.
+Enable or disable notifications, set a session reminder and manage macOS notification access.
 
 ## Installation
 
