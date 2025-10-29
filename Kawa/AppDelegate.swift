@@ -1,7 +1,9 @@
 import SwiftUI
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuBarManager: MenuBarManager?
+    var settingsWindowController: SettingsWindowController?
 
     func applicationDidFinishLaunching(_: Notification) {
         print("🎯 App finished launching")
@@ -11,5 +13,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Init menu bar manager
         menuBarManager = MenuBarManager()
+
+        // menuBarManager?.settingsWindowController.show(pane: "general")
     }
 }

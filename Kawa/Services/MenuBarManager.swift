@@ -52,8 +52,8 @@ final class MenuBarManager: NSObject, ObservableObject {
     private var remainingTimeValueLabel: NSTextField?
 
     @Published private(set) var quickStartClickMode: QuickStartClickMode = .right
-
-    private lazy var settingsWindowController = makeSettingsController()
+    // private(set) to allow access in AppDelegate for DEBUG only
+    private(set) lazy var settingsWindowController = makeSettingsController()
 
     // MARK: - Initialization
 
