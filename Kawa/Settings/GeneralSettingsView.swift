@@ -115,9 +115,6 @@ struct GeneralSettingsView: View {
                 }
             }
         }
-        .onChange(of: preventLidSleep) { _, newValue in
-            ClosedDisplayManager.setEnabled(newValue)
-        }
         .padding(.vertical, 20)
         .padding(.horizontal, 30)
     }

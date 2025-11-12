@@ -186,6 +186,14 @@ class SleepPreventionManager: ObservableObject {
         // Apply the desired state.
         manageAssertion(type: .preventSystemSleep, enable: shouldPreventSystemSleep)
         manageAssertion(type: .preventDisplaySleep, enable: shouldPreventDisplaySleep)
+
+        // Handle closed-display mode
+        let preventLidSleep = UserDefaults.standard.bool(forKey: "preventLidSleep")
+        if isPreventingSleep, preventLidSleep {
+            ClosedDisplayManager.setEnabled(true)
+        } else {
+            ClosedDisplayManager.setEnabled(false)
+        }
     }
 
     private func scheduleSessionReminder() {
