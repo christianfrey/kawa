@@ -93,12 +93,16 @@ final class SettingsWindowController: NSWindowController {
 
         // Compute the size of the window needed to fully fit the current pane
         let newSize = currentView.fittingSize
+        guard newSize.height > 0 else { return }
         let newWindowFrame = window.frameRect(forContentRect: NSRect(origin: .zero, size: newSize))
 
         // Keep the top-left corner of the window fixed during resize
         var targetFrame = window.frame
         targetFrame.origin.y += targetFrame.height - newWindowFrame.height
         targetFrame.size = newWindowFrame.size
+
+        // Skip if already at target size
+        guard !targetFrame.equalTo(window.frame) else { return }
 
         // Pre-align before resize to avoid flicker when growing
         currentView.frame = NSRect(
@@ -112,6 +116,7 @@ final class SettingsWindowController: NSWindowController {
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.25
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            context.allowsImplicitAnimation = true
             window.animator().setFrame(targetFrame, display: true)
         }
     }
@@ -181,6 +186,7 @@ final class SettingsWindowController: NSWindowController {
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.25
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            context.allowsImplicitAnimation = true
 
             // Animate window resize
             window.animator().setFrame(frame, display: true)
@@ -260,6 +266,7 @@ final class SettingsPaneHostingController<Content: View>: NSHostingController<Co
     let paneIdentifier: String
     let paneTitle: String
     let toolbarItemIcon: NSImage
+    private var lastKnownFittingSize: NSSize = .zero
 
     init(identifier: String, title: String, icon: NSImage, @ViewBuilder content: () -> Content) {
         paneIdentifier = identifier
@@ -272,5 +279,17 @@ final class SettingsPaneHostingController<Content: View>: NSHostingController<Co
     @available(*, unavailable)
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLayout() {
+        super.viewDidLayout()
+        let currentSize = view.fittingSize
+        guard currentSize.height > 0, currentSize != lastKnownFittingSize else { return }
+        lastKnownFittingSize = currentSize
+        NotificationCenter.default.post(
+            name: NSNotification.Name("SettingsPaneContentSizeChanged"),
+            object: nil,
+            userInfo: ["paneIdentifier": paneIdentifier],
+        )
     }
 }

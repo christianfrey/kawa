@@ -60,9 +60,6 @@ struct DurationSettingsView: View {
     @AppStorage("customMinutes")
     private var customMinutes: Int = 30
 
-    // Pane identifier for notification
-    private let paneIdentifier = "duration"
-
     // Computed property for total duration display
     private var totalDurationText: String {
         if customHours == 0, customMinutes == 0 {
@@ -131,9 +128,6 @@ struct DurationSettingsView: View {
 
                     Toggle("Enable Custom Duration", isOn: $isCustomDurationEnabled)
                         .help("Override the default duration with a custom value.")
-                        .onChange(of: isCustomDurationEnabled) { _, _ in
-                            notifyContentSizeChange()
-                        }
                 }
 
                 if isCustomDurationEnabled {
@@ -193,15 +187,6 @@ struct DurationSettingsView: View {
         .padding(.horizontal, 30)
     }
 
-    // MARK: - Notification Helper
-
-    private func notifyContentSizeChange() {
-        NotificationCenter.default.post(
-            name: NSNotification.Name("SettingsPaneContentSizeChanged"),
-            object: nil,
-            userInfo: ["paneIdentifier": paneIdentifier],
-        )
-    }
 }
 
 // MARK: - Preview

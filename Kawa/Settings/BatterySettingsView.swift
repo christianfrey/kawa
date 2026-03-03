@@ -7,9 +7,6 @@ struct BatterySettingsView: View {
     @AppStorage("batteryThreshold") private var batteryThreshold: Double = 50.0
     @StateObject private var batteryMonitor = BatteryMonitor()
 
-    // Pane identifier for notification
-    private let paneIdentifier = "battery"
-
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Current Battery Status Card
@@ -31,9 +28,6 @@ struct BatterySettingsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Toggle("Deactivate when battery drops below threshold", isOn: $deactivateOnLowBattery)
                         .help("Automatically disable sleep prevention when battery drops below threshold")
-                        .onChange(of: deactivateOnLowBattery) { _, _ in
-                            notifyContentSizeChange()
-                        }
 
                     if deactivateOnLowBattery {
                         HStack {
@@ -50,15 +44,6 @@ struct BatterySettingsView: View {
         .padding(.horizontal, 30)
     }
 
-    // MARK: - Notification Helper
-
-    private func notifyContentSizeChange() {
-        NotificationCenter.default.post(
-            name: NSNotification.Name("SettingsPaneContentSizeChanged"),
-            object: nil,
-            userInfo: ["paneIdentifier": paneIdentifier],
-        )
-    }
 }
 
 // MARK: - Battery Status Card

@@ -11,9 +11,6 @@ struct NotificationsSettingsView: View {
     @AppStorage("notifyOnDeactivation") private var notifyOnDeactivation = true
     @State private var authorizationStatus: UNAuthorizationStatus?
 
-    // Pane identifier for notification
-    private let paneIdentifier = "notifications"
-
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // Notification Toggle
@@ -99,20 +96,10 @@ struct NotificationsSettingsView: View {
         .padding(.vertical, 20)
         .padding(.horizontal, 30)
         .onAppear(perform: checkNotificationStatus)
-        .onChange(of: sessionReminderEnabled) { _, _ in notifyContentSizeChange() }
-        .onChange(of: authorizationStatus) { _, _ in notifyContentSizeChange() }
         // Check when app becomes active (i.e. user returns from System Settings)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             checkNotificationStatus()
         }
-    }
-
-    private func notifyContentSizeChange() {
-        NotificationCenter.default.post(
-            name: NSNotification.Name("SettingsPaneContentSizeChanged"),
-            object: nil,
-            userInfo: ["paneIdentifier": paneIdentifier],
-        )
     }
 
     private func checkNotificationStatus() {
